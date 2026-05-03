@@ -1,0 +1,113 @@
+{
+  "overallScore": 58,
+  "verdict": "This listing has a strong hero and credible clinical language but loses conversions in images 2 and 5. The ingredients infographic is information-dense with 9-point font that is unreadable on mobile. The trust signal image buries the TRAACS certification logo in the bottom-right corner where fewer than 20% of mobile shoppers scroll.",
+  "images": [
+    {
+      "index": 0,
+      "score": 72,
+      "failures": [
+        {
+          "lever": "Mobile Readability",
+          "severity": "major",
+          "description": "The hero copy block contains 14 words in two lines at the top of the image. On a 375px mobile screen this renders at approximately 10pt equivalent — below the 12pt threshold for comfortable reading while scanning.",
+          "fix": "Reduce hero copy to one benefit line of 6 words maximum. Move the secondary claim (TRAACS chelated form) to image 3 or 4."
+        },
+        {
+          "lever": "Benefit Hierarchy",
+          "severity": "minor",
+          "description": "The three benefit icons (sleep, muscle, bone) are equal size with no visual hierarchy. The highest-converting benefit (sleep) shares the same visual weight as the others.",
+          "fix": "Redesign the icon row with the sleep icon at 48px and the other two at 32px. Add a one-word label beneath each icon."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "score": 75,
+      "failures": [
+        {
+          "lever": "Background Contrast",
+          "severity": "minor",
+          "description": "The lifestyle image uses a warm cream background that merges with the tablet color. There is less than 3:1 contrast between the product and the background.",
+          "fix": "Use a cooler neutral background (#f0f4f8) to create visual separation, or introduce a subtle drop shadow behind the product."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "score": 38,
+      "failures": [
+        {
+          "lever": "Information Hierarchy",
+          "severity": "critical",
+          "description": "The ingredients breakdown infographic contains 7 separate data points across 3 columns in a 9pt font. On a 375px mobile screen none of the text is legible. This image is the single largest mobile readability failure in the listing.",
+          "fix": "Break this into two separate images: one for the TRAACS mechanism (single concept, large typography) and one for the comparison table. Each image should contain one dominant idea."
+        },
+        {
+          "lever": "Visual Clutter",
+          "severity": "major",
+          "description": "Six certification badges appear in a single row at the bottom of the image. On mobile they render at 12px square — too small to communicate trust, large enough to create visual noise.",
+          "fix": "Feature the two most recognisable certifications (Non-GMO Project, NSF) at full legible size in their own image. Drop or reduce the others."
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "score": 65,
+      "failures": [
+        {
+          "lever": "Competitive Differentiation",
+          "severity": "major",
+          "description": "The comparison chart uses 'Our Product' vs 'Other Brands' framing without naming the form advantage. Shoppers who do not already know the glycinate vs oxide difference gain nothing from this image.",
+          "fix": "Add a single explanatory line: 'Magnesium Oxide: 4% absorption. Magnesium Glycinate: up to 80% absorption.' This single data point justifies the price premium."
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "score": 78,
+      "failures": [
+        {
+          "lever": "Call to Action",
+          "severity": "minor",
+          "description": "The suggested use image does not include a specific dosing recommendation for the most common use case (sleep). Shoppers searching for a sleep aid need to see '2 tablets 1 hour before bed' to confirm this product fits their routine.",
+          "fix": "Add a 'For Sleep Support' callout with the specific dosing protocol. This directly addresses the top purchase trigger identified in reviews."
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "score": 44,
+      "failures": [
+        {
+          "lever": "Trust Signal Placement",
+          "severity": "critical",
+          "description": "The third-party testing certificate visual is placed in the bottom-right corner of image 5 — the last image in the stack. At this position it is viewed by fewer than 20% of mobile shoppers. The strongest trust signal in the supplement category is being wasted.",
+          "fix": "Move the third-party testing callout to image 2 as a standalone trust image. Use the format: large lab flask icon, bold 'Third-Party Tested for Purity & Potency' headline, then the certifying body name at readable size."
+        },
+        {
+          "lever": "Premium Positioning",
+          "severity": "major",
+          "description": "The image background and typography do not match the clinical/medical trust the brand is trying to build. The design language is utilitarian, which works against the premium positioning justified by the TRAACS patent.",
+          "fix": "Introduce white space and a muted clinical color palette (white + navy + a single accent). Replace generic product shots with outcome imagery — a person sleeping, a person at a desk relaxed."
+        }
+      ]
+    }
+  ],
+  "topFailures": [
+    {
+      "title": "Ingredients infographic is unreadable on mobile",
+      "description": "Image 2 contains 7 data points in a 3-column layout with 9pt font. On a 375px mobile screen it is visually illegible — the image communicates complexity rather than confidence.",
+      "fix": "Split into two images: one for the absorption mechanism and one for the comparison table. Each image should contain a single dominant idea with one large headline."
+    },
+    {
+      "title": "Third-party testing credential is buried",
+      "description": "The highest-converting trust signal in the supplement category (independent lab testing) is placed in the bottom-right corner of the last image. It is seen by fewer than 20% of mobile shoppers.",
+      "fix": "Promote third-party testing to image 2 as a standalone trust image. Use the format: icon + bold headline + certifying body name at legible size."
+    },
+    {
+      "title": "Hero copy exceeds mobile readability threshold",
+      "description": "14 words across two lines in the hero image renders at approximately 10pt on mobile screens. Shoppers scanning the carousel cannot read the core value proposition without zooming.",
+      "fix": "Reduce hero copy to one benefit line of 6 words maximum. Move secondary claims to later images."
+    }
+  ]
+}

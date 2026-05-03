@@ -1,0 +1,43 @@
+{
+  "queries": [
+    {
+      "question": "What magnesium supplement is best for sleep?",
+      "claudeFound": false,
+      "geminiFound": false
+    },
+    {
+      "question": "Best magnesium glycinate supplement brand",
+      "claudeFound": true,
+      "geminiFound": false
+    },
+    {
+      "question": "Natural remedy for leg cramps at night",
+      "claudeFound": false,
+      "geminiFound": false
+    },
+    {
+      "question": "Chelated magnesium supplement for anxiety",
+      "claudeFound": false,
+      "geminiFound": true
+    },
+    {
+      "question": "Magnesium supplement recommended by doctors",
+      "claudeFound": true,
+      "geminiFound": true
+    },
+    {
+      "question": "TRAACS magnesium chelate bioavailability",
+      "claudeFound": false,
+      "geminiFound": false
+    }
+  ],
+  "visibilityScore": 33,
+  "missingKeywords": [
+    "magnesium for sleep",
+    "natural sleep aid supplement",
+    "magnesium leg cramps night",
+    "best chelated magnesium",
+    "magnesium glycinate anxiety",
+    "high absorption magnesium supplement"
+  ]
+}

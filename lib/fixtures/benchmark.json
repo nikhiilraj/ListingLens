@@ -1,0 +1,32 @@
+{
+  "competitorCount": 5,
+  "visualStrategies": [
+    {
+      "asin": "B00VGRHDRC",
+      "strategy": "Clinical authority — white background, oversized certificate badges, lab coat imagery. Communicates pharmaceutical-grade trust without claiming it. Every image contains one claim and one supporting credential.",
+      "hookLine": "Tested by science. Trusted by doctors."
+    },
+    {
+      "asin": "B01GV4O9R4",
+      "strategy": "Outcome-first lifestyle — lead image is a sleeping woman, not a bottle. The product appears in image 3. Converts by selling the benefit before the product, which reduces the cognitive cost of evaluating the category.",
+      "hookLine": "Deep sleep, naturally."
+    },
+    {
+      "asin": "B07SNVF8HY",
+      "strategy": "Value density — comparison table as hero image showing milligrams per dollar vs every named competitor. Anchors the price objection before it can form. Works well in a category where price sensitivity is high.",
+      "hookLine": "3× more magnesium per dollar."
+    },
+    {
+      "asin": "B01BYQRFKG",
+      "strategy": "Minimalist premium — all-white images with a single product and one bold benefit per slide. Eight images, eight benefits, no clutter. Converts on simplicity and confidence. The restraint signals quality.",
+      "hookLine": "One ingredient. Done right."
+    },
+    {
+      "asin": "B09XNVQH9T",
+      "strategy": "Community trust — every image features a customer quote in large mono font. No stock photos, no infographics. Converts on social proof density. Effective because supplement buyers are skeptical of brand claims and responsive to peer testimony.",
+      "hookLine": "42,000+ verified buyers."
+    }
+  ],
+  "gapAnalysis": "The category is split between clinical authority (competitor 1) and outcome-first lifestyle (competitor 2). Doctor's Best sits in neither lane clearly — the current listing uses clinical language but lifestyle-adjacent imagery. This mixed signal reduces conviction at the point of decision. The glycinate bioavailability advantage (up to 80% absorbed vs 4% for oxide) is the strongest differentiator in the category and no competitor is currently leading with it as a standalone visual claim.",
+  "opening": "Own the bioavailability argument. No competitor is using the absorption comparison as a first-image hook. A hero image built around '80% absorbed vs 4% in standard magnesium' with the TRAACS badge occupies unclaimed high-intent search real estate and directly addresses the most common purchase objection: why is this more expensive than the $8 bottle?"
+}

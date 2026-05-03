@@ -1,0 +1,39 @@
+{
+  "overallScore": 58,
+  "grade": "C",
+  "verdict": "Doctor's Best Magnesium Glycinate has the right product and the right clinical story, but a listing that actively works against conversions on mobile. The core failure is structural: the most compelling differentiators — bioavailability, third-party testing, TRAACS certification — are either buried in the last images or presented in a format illegible at 375px. The visual audit, review analysis, and competitor benchmarking all point to the same root cause: this listing was designed for desktop and never stress-tested on a phone.",
+  "biggestLeak": {
+    "imageIndex": 2,
+    "description": "The ingredients infographic in image 2 contains 7 data points in a 3-column layout with 9pt font. On mobile it renders as visual noise. Meanwhile, the most powerful conversion argument in the supplement category — the absorption comparison between glycinate and oxide forms — is buried in this illegible image.",
+    "prescription": "Replace image 2 entirely. Build two new images: (1) a single-concept absorption comparison — '80% absorbed vs 4% in standard magnesium oxide' — with bold mono typography on a white background; (2) a standalone third-party testing trust image with the certifying body logo at legible size. These two images address the top purchase trigger (clinical credibility) and the top trust barrier (is this really what it claims to be?)."
+  },
+  "pixiiBrief": {
+    "productCategory": "Dietary supplement — chelated magnesium for sleep, muscle recovery, and stress support",
+    "targetCustomer": "Health-conscious adults 30–55 who have tried cheaper magnesium forms and experienced GI side effects or poor absorption. Likely researched before buying. A secondary segment is healthcare professionals buying for themselves based on category knowledge. Both segments respond to clinical evidence, not lifestyle aspiration.",
+    "visualDirection": "Clinical precision over wellness softness. White backgrounds, navy accents, mono typography for data points. The visual language should feel like a lab report, not a yoga retreat. Every image should contain exactly one claim supported by exactly one data point. Remove all stock photography.",
+    "heroRecommendation": "Replace the current hero with a two-element composition: the bottle on the left (40% of frame), and on the right in bold mono: '80% absorbed. 4% in standard magnesium.' Below that, a single badge: 'TRAACS Chelated Form — Patented.' No lifestyle imagery. No icons. The product and the number are the entire argument.",
+    "infographicPriorities": [
+      "Absorption comparison: glycinate 80% vs oxide 4% — this is the most important image in the listing and does not currently exist. Build it as image 2.",
+      "Third-party testing trust image: oversized lab flask icon, 'Independently Tested for Purity & Potency', NSF and Non-GMO badges at legible size. Move to image 3.",
+      "Dosing protocol by use case: 'For sleep: 2 tablets 1 hour before bed. For muscle recovery: 2 tablets post-workout.' Directly addresses the top purchase trigger identified in 4 of 9 reviews."
+    ],
+    "trustSignals": [
+      "TRAACS patented chelation — move from body copy to a standalone image element in the first 3 images",
+      "Third-party testing certificate — move from image 5 corner to image 3 hero treatment",
+      "Healthcare professional endorsement — at least one review explicitly mentions a cardiologist recommendation by brand name; feature this as a pull quote in image 6",
+      "Non-GMO Project Verified badge — the most recognisable certification, should appear in the first 3 images not the last"
+    ],
+    "mobileNotes": "All body copy in infographics must be minimum 14pt equivalent at 375px viewport. Currently image 2 fails this threshold by 36%. Audit every image by loading the listing on a physical iPhone before any redesign goes live. The comparison table in image 3 is borderline — redesign as a side-by-side bar chart rather than a text table.",
+    "searchKeywords": [
+      "magnesium glycinate sleep",
+      "chelated magnesium supplement",
+      "TRAACS magnesium",
+      "magnesium for leg cramps",
+      "magnesium glycinate anxiety",
+      "high absorption magnesium",
+      "magnesium supplement for sleep",
+      "doctor recommended magnesium"
+    ],
+    "competitorOpening": "No competitor is currently leading with the absorption percentage comparison as a hero image. This is the highest-intent search query in the category ('best absorbed magnesium supplement') and the answer — 80% bioavailability vs 4% in oxide — is the strongest differentiator available. Building a single image around this number occupies unclaimed visual real estate and converts the most valuable shopper: one who already knows they want glycinate and is choosing between brands."
+  }
+}
