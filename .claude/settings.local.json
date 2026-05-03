@@ -7,7 +7,12 @@
       "Bash(python3 -c ' *)",
       "Bash(curl -s 'https://www.searchapi.io/api/v1/search?engine=amazon_product&asin=B0DT1JKGPH' -H 'Authorization: Bearer Btd1B7VKywaBRXh16uWy3f2M')",
       "Bash(npx tsc *)",
-      "Bash(npx tsx *)"
+      "Bash(npx tsx *)",
+      "Bash(curl -s -o /dev/null -w 'status: %{http_code} size: %{size_download}' https://m.media-amazon.com/images/I/61A-zRQCJiL._AC_SL1500_.jpg)",
+      "Bash(curl -s -o /dev/null -w 'status: %{http_code} size: %{size_download}' https://m.media-amazon.com/images/I/61A-zRQCJiL._AC_SX679_.jpg)",
+      "Bash(curl -s -o /dev/null -w 'status: %{http_code} size: %{size_download}' https://m.media-amazon.com/images/I/61A-zRQCJiL._SL1500_.jpg)",
+      "Bash(curl -s 'https://www.searchapi.io/api/v1/search?engine=amazon_search&q=kitchen+gadget+instant+pot' -H 'Authorization: Bearer Btd1B7VKywaBRXh16uWy3f2M')",
+      "Bash(curl -s -X POST http://localhost:3000/api/analyse -H 'Content-Type: application/json' -d '{\"url\":\"https://www.amazon.com/dp/B08N5WRWNW\"}' --no-buffer -N)"
     ]
   }
 }

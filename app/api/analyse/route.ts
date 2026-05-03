@@ -76,9 +76,11 @@ export async function POST(request: Request): Promise<Response> {
           }
         }
 
+        // In dev mode use fixtures; in real mode fall back to fixtures for known test ASINs
+        // when the product API fails (e.g. SearchAPI free tier doesn't support amazon_product).
         const product = isDevMode()
           ? getFixtureProduct(asin) ?? getFixtureProduct('B0CHX1W1XY')
-          : await getAmazonProduct(asin);
+          : await getAmazonProduct(asin) ?? getFixtureProduct(asin);
         if (!product) {
           send({ type: 'error', message: 'Could not fetch product data for this listing.' });
           return;

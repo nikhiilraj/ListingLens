@@ -91,6 +91,8 @@ const AGENTS: Agent[] = [
   },
 ];
 
+const AGENT_INDEX: Record<string, number> = { visual: 0, review: 1, search: 2, benchmark: 3 };
+
 const IMAGES: ImageItem[] = [
   {
     id: 1, label: 'Hero image', score: 48,
@@ -220,13 +222,14 @@ function StatusDot({ state }: { state: AgentState }) {
 }
 
 function AgentCard({
-  agent, state, streamedLines, visible, delay,
+  agent, state, streamedLines, visible, delay, summary,
 }: {
   agent: Agent;
   state: AgentState;
   streamedLines: string[];
   visible: boolean;
   delay: number;
+  summary?: string;
 }) {
   const isRunning = state === 'running';
   const isComplete = state === 'complete';
@@ -277,7 +280,7 @@ function AgentCard({
                 {line}
               </div>
             ))}
-            {isComplete && <span>{agent.summary}</span>}
+            {isComplete && <span>{summary ?? agent.summary}</span>}
           </div>
         </div>
         {isComplete && (
@@ -415,6 +418,8 @@ export default function HomeClient() {
   const [scoreAnimate, setScoreAnimate] = useState(false);
   const [statusText, setStatusText] = useState('');
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+  const [agentSummaries, setAgentSummaries] = useState(['', '', '', '']);
+  const [apiError, setApiError] = useState('');
 
   const animatedScore = useAnimatedCount(DEMO_SCORE, 800, scoreAnimate);
 
@@ -426,6 +431,8 @@ export default function HomeClient() {
     'Synthesising cross-agent signals…',
   ];
   const statusRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+  const typingRefs = useRef<Array<{ cancel: () => void } | null>>([null, null, null, null]);
 
   useEffect(() => {
     if (phase !== 'running') return;
@@ -439,15 +446,65 @@ export default function HomeClient() {
 
   const handleSubmit = useCallback(() => {
     const trimmed = url.trim();
-    if (!trimmed.includes('amazon') || !trimmed.includes('/dp/')) {
+    if (!trimmed.toLowerCase().includes('amazon.')) {
       setUrlError("That doesn't look like an Amazon listing URL.");
       return;
     }
     setUrlError('');
-    runDemo();
-  }, [url]);
+    setApiError('');
+    runAnalysis();
+  }, [url]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function runDemo() {
+  function animateLine(agentIdx: number, line: string) {
+    typingRefs.current[agentIdx]?.cancel();
+    let cancelled = false;
+    let charIdx = 0;
+    let tid: ReturnType<typeof setTimeout>;
+
+    setStreamedLines(prev => {
+      const n = prev.map(a => [...a]);
+      n[agentIdx] = [...n[agentIdx], ''];
+      return n;
+    });
+
+    const step = () => {
+      if (cancelled) return;
+      if (charIdx >= line.length) { typingRefs.current[agentIdx] = null; return; }
+      setStreamedLines(prev => {
+        const n = prev.map(a => [...a]);
+        if (n[agentIdx].length === 0) return n;
+        const lines = [...n[agentIdx]];
+        lines[lines.length - 1] = line.substring(0, charIdx + 1);
+        n[agentIdx] = lines;
+        return n;
+      });
+      charIdx++;
+      tid = setTimeout(step, 30 + Math.random() * 20);
+    };
+
+    typingRefs.current[agentIdx] = {
+      cancel: () => {
+        cancelled = true;
+        clearTimeout(tid);
+        setStreamedLines(prev => {
+          const n = prev.map(a => [...a]);
+          if (n[agentIdx].length > 0) {
+            const lines = [...n[agentIdx]];
+            lines[lines.length - 1] = line;
+            n[agentIdx] = lines;
+          }
+          return n;
+        });
+      },
+    };
+
+    step();
+  }
+
+  async function runAnalysis() {
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+
     setPhase('running');
     setAgentsDoneCount(0);
     setSynthState('hidden');
@@ -457,6 +514,9 @@ export default function HomeClient() {
     setStreamedLines([[], [], [], []]);
     setCardsVisible([false, false, false, false]);
     setDashVisible(false);
+    setAgentSummaries(['', '', '', '']);
+    typingRefs.current = [null, null, null, null];
+    statusRef.current = 0;
 
     setTimeout(() => setDashVisible(true), 100);
     ([0, 1, 2, 3] as const).forEach(i => {
@@ -465,66 +525,81 @@ export default function HomeClient() {
       }, 300 + i * 80);
     });
 
-    const agentTimings = [600, 1200, 900, 1400];
-    AGENTS.forEach((_, idx) => runAgent(idx, agentTimings[idx]));
-  }
+    try {
+      const res = await fetch('/api/analyse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+        signal: abortRef.current.signal,
+      });
 
-  function runAgent(agentIdx: number, startDelay: number) {
-    const agent = AGENTS[agentIdx];
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string };
+        setApiError(data.error ?? 'Something went wrong.');
+        setPhase('idle');
+        return;
+      }
 
-    setTimeout(() => {
-      setAgentStates(prev => { const n = [...prev]; n[agentIdx] = 'running'; return n; });
+      const reader = res.body!.getReader();
+      const dec = new TextDecoder();
+      let buf = '';
 
-      let lineIdx = 0;
-      let charIdx = 0;
+      outer: while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const parts = buf.split('\n');
+        buf = parts.pop() ?? '';
 
-      const streamNext = () => {
-        if (lineIdx >= agent.lines.length) {
-          setTimeout(() => {
-            setAgentStates(prev => { const n = [...prev]; n[agentIdx] = 'complete'; return n; });
-            setAgentsDoneCount(prev => {
-              const newCount = prev + 1;
-              if (newCount === AGENTS.length) {
-                setTimeout(() => setSynthState('synth'), 200);
-                setTimeout(() => setSynthState('done'), 2200);
-                setTimeout(() => {
-                  setReportVisible(true);
-                  setTimeout(() => setScoreAnimate(true), 300);
-                }, 2800);
-              }
-              return newCount;
+        for (const part of parts) {
+          if (!part.startsWith('data: ')) continue;
+          let ev: Record<string, unknown>;
+          try { ev = JSON.parse(part.slice(6)); } catch { continue; }
+
+          if (ev.type === 'error') {
+            setApiError((ev.message as string) ?? 'Analysis failed.');
+            setPhase('idle');
+            break outer;
+          }
+
+          if (ev.type === 'complete') {
+            setPhase('complete');
+            break outer;
+          }
+
+          if (ev.agent === 'synthesis') {
+            if (ev.status === 'running') setSynthState('synth');
+            if (ev.status === 'complete') {
+              setSynthState('done');
+              setTimeout(() => { setReportVisible(true); setTimeout(() => setScoreAnimate(true), 300); }, 600);
+            }
+            continue;
+          }
+
+          const idx = AGENT_INDEX[ev.agent as string];
+          if (idx === undefined) continue;
+
+          if (ev.status === 'running') {
+            setAgentStates(prev => { const n = [...prev]; n[idx] = 'running'; return n; });
+            animateLine(idx, ev.message as string);
+          } else if (ev.status === 'complete' || ev.status === 'failed') {
+            typingRefs.current[idx]?.cancel();
+            typingRefs.current[idx] = null;
+            setAgentStates(prev => { const n = [...prev]; n[idx] = 'complete'; return n; });
+            setAgentSummaries(prev => {
+              const n = [...prev];
+              n[idx] = ((ev.summary ?? ev.message ?? '') as string);
+              return n;
             });
-          }, 200);
-          return;
+            setAgentsDoneCount(prev => prev + 1);
+          }
         }
-
-        const line = agent.lines[lineIdx];
-        if (charIdx === 0) {
-          setStreamedLines(prev => {
-            const n = prev.map(a => [...a]);
-            n[agentIdx] = [...n[agentIdx], ''];
-            return n;
-          });
-        }
-        if (charIdx < line.length) {
-          setStreamedLines(prev => {
-            const n = prev.map(a => [...a]);
-            const lines = [...n[agentIdx]];
-            lines[lines.length - 1] = line.substring(0, charIdx + 1);
-            n[agentIdx] = lines;
-            return n;
-          });
-          charIdx++;
-          setTimeout(streamNext, 45 + Math.random() * 20);
-        } else {
-          lineIdx++;
-          charIdx = 0;
-          setTimeout(streamNext, 350 + Math.random() * 200);
-        }
-      };
-
-      streamNext();
-    }, startDelay);
+      }
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return;
+      setApiError('Connection error. Please try again.');
+      setPhase('idle');
+    }
   }
 
   const heroStyle = (delay: number): React.CSSProperties => ({
@@ -637,9 +712,9 @@ export default function HomeClient() {
                 </button>
               </div>
 
-              {urlError && (
+              {(urlError || apiError) && (
                 <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--score-low)', marginTop: 8, textAlign: 'left' }}>
-                  {urlError}
+                  {urlError || apiError}
                 </div>
               )}
 
@@ -676,6 +751,7 @@ export default function HomeClient() {
                     streamedLines={streamedLines[i]}
                     visible={cardsVisible[i]}
                     delay={0}
+                    summary={agentSummaries[i] || undefined}
                   />
                 ))}
               </div>
