@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --no-eslint --yes)",
-      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --no-eslint --yes --name listinglens)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --no-eslint --yes --name listinglens)",
+      "Bash(curl -s 'https://www.searchapi.io/api/v1/search?engine=amazon_search&q=magnesium+glycinate' -H 'Authorization: Bearer Btd1B7VKywaBRXh16uWy3f2M')",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s 'https://www.searchapi.io/api/v1/search?engine=amazon_product&asin=B0DT1JKGPH' -H 'Authorization: Bearer Btd1B7VKywaBRXh16uWy3f2M')",
+      "Bash(npx tsc *)",
+      "Bash(npx tsx *)"
     ]
   }
 }
