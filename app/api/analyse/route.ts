@@ -15,6 +15,10 @@ import type { Report } from '../../../lib/schemas/report';
 export const runtime = 'edge';
 export const maxDuration = 60;
 
+function withTimeout<T>(p: Promise<T | null>, ms: number): Promise<T | null> {
+  return Promise.race([p, new Promise<null>(resolve => setTimeout(() => resolve(null), ms))]);
+}
+
 interface CachedResult {
   id: string;
   asin: string;
@@ -89,10 +93,10 @@ export async function POST(request: Request): Promise<Response> {
         send({ type: 'product', data: product });
 
         const [visualResult, reviewResult, searchResult, benchmarkResult] = await Promise.allSettled([
-          runVisualAuditor(product, writer),
-          runReviewIntelligence(product, asin, writer),
-          runAISearchAuditor(product, writer),
-          runCategoryBenchmarker(product, writer),
+          withTimeout(runVisualAuditor(product, writer), 45000),
+          withTimeout(runReviewIntelligence(product, asin, writer), 25000),
+          withTimeout(runAISearchAuditor(product, writer), 35000),
+          withTimeout(runCategoryBenchmarker(product, writer), 45000),
         ]);
 
         const visual = visualResult.status === 'fulfilled' ? visualResult.value : null;

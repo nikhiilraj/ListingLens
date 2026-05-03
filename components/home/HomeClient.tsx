@@ -222,7 +222,7 @@ function StatusDot({ state }: { state: AgentState }) {
 }
 
 function AgentCard({
-  agent, state, streamedLines, visible, delay, summary,
+  agent, state, streamedLines, visible, delay, summary, elapsed,
 }: {
   agent: Agent;
   state: AgentState;
@@ -230,6 +230,7 @@ function AgentCard({
   visible: boolean;
   delay: number;
   summary?: string;
+  elapsed?: number;
 }) {
   const isRunning = state === 'running';
   const isComplete = state === 'complete';
@@ -283,6 +284,16 @@ function AgentCard({
             {isComplete && <span>{summary ?? agent.summary}</span>}
           </div>
         </div>
+        {isRunning && elapsed !== undefined && elapsed > 0 && (
+          <div style={{
+            fontFamily: 'var(--font-jetbrains-mono)',
+            fontSize: 11,
+            color: 'var(--text-tertiary)',
+            flexShrink: 0,
+          }}>
+            {elapsed}s
+          </div>
+        )}
         {isComplete && (
           <div style={{
             fontFamily: 'var(--font-jetbrains-mono)',
@@ -420,6 +431,8 @@ export default function HomeClient() {
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
   const [agentSummaries, setAgentSummaries] = useState(['', '', '', '']);
   const [apiError, setApiError] = useState('');
+  const [agentElapsed, setAgentElapsed] = useState([0, 0, 0, 0]);
+  const agentStartTimes = useRef<Array<number | null>>([null, null, null, null]);
 
   const animatedScore = useAnimatedCount(DEMO_SCORE, 800, scoreAnimate);
 
@@ -441,6 +454,15 @@ export default function HomeClient() {
       statusRef.current = (statusRef.current + 1) % STATUS_MESSAGES.length;
       setStatusText(STATUS_MESSAGES[statusRef.current]);
     }, 2800);
+    return () => clearInterval(interval);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== 'running') return;
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setAgentElapsed(agentStartTimes.current.map(t => t !== null ? Math.floor((now - t) / 1000) : 0));
+    }, 1000);
     return () => clearInterval(interval);
   }, [phase]);
 
@@ -515,7 +537,9 @@ export default function HomeClient() {
     setCardsVisible([false, false, false, false]);
     setDashVisible(false);
     setAgentSummaries(['', '', '', '']);
+    setAgentElapsed([0, 0, 0, 0]);
     typingRefs.current = [null, null, null, null];
+    agentStartTimes.current = [null, null, null, null];
     statusRef.current = 0;
 
     setTimeout(() => setDashVisible(true), 100);
@@ -580,9 +604,13 @@ export default function HomeClient() {
           if (idx === undefined) continue;
 
           if (ev.status === 'running') {
+            if (agentStartTimes.current[idx] === null) {
+              agentStartTimes.current[idx] = Date.now();
+            }
             setAgentStates(prev => { const n = [...prev]; n[idx] = 'running'; return n; });
             animateLine(idx, ev.message as string);
           } else if (ev.status === 'complete' || ev.status === 'failed') {
+            agentStartTimes.current[idx] = null;
             typingRefs.current[idx]?.cancel();
             typingRefs.current[idx] = null;
             setAgentStates(prev => { const n = [...prev]; n[idx] = 'complete'; return n; });
@@ -752,6 +780,7 @@ export default function HomeClient() {
                     visible={cardsVisible[i]}
                     delay={0}
                     summary={agentSummaries[i] || undefined}
+                    elapsed={agentElapsed[i]}
                   />
                 ))}
               </div>

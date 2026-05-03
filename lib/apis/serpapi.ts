@@ -7,17 +7,20 @@ function searchApiHeaders() {
   return { Authorization: `Bearer ${process.env.SERPAPI_KEY}` };
 }
 
+function fetchWithTimeout(url: string, ms: number): Promise<Response> {
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { headers: searchApiHeaders(), signal: controller.signal })
+    .finally(() => clearTimeout(tid));
+}
+
 export async function getAmazonProduct(asin: string): Promise<ProductData | null> {
   try {
     const url = new URL(SEARCHAPI_BASE);
     url.searchParams.set('engine', 'amazon_product');
     url.searchParams.set('asin', asin);
 
-    const res = await fetch(url.toString(), {
-      headers: searchApiHeaders(),
-      signal: AbortSignal.timeout(15000),
-    });
-
+    const res = await fetchWithTimeout(url.toString(), 15000);
     if (!res.ok) return null;
 
     const data = await res.json();
@@ -47,27 +50,39 @@ export async function getAmazonProduct(asin: string): Promise<ProductData | null
 }
 
 export async function searchAmazon(keyword: string, limit: number = 5): Promise<string[] | null> {
+  const results = await searchAmazonRich(keyword, limit);
+  if (!results) return null;
+  return results.map(r => r.asin);
+}
+
+export interface SearchResult {
+  asin: string;
+  thumbnail: string;
+  title: string;
+}
+
+export async function searchAmazonRich(keyword: string, limit: number = 5): Promise<SearchResult[] | null> {
   try {
     const url = new URL(SEARCHAPI_BASE);
     url.searchParams.set('engine', 'amazon_search');
     url.searchParams.set('q', keyword);
 
-    const res = await fetch(url.toString(), {
-      headers: searchApiHeaders(),
-      signal: AbortSignal.timeout(15000),
-    });
-
+    const res = await fetchWithTimeout(url.toString(), 15000);
     if (!res.ok) return null;
 
     const data = await res.json();
-    const results: Array<{ asin?: string }> = data.organic_results ?? [];
+    const results: Array<{ asin?: string; thumbnail?: string; title?: string }> = data.organic_results ?? [];
 
-    const asins = results
-      .map((r) => r.asin)
-      .filter((a): a is string => typeof a === 'string' && a.length > 0)
-      .slice(0, limit);
+    const items = results
+      .filter(r => r.asin && r.thumbnail)
+      .slice(0, limit)
+      .map(r => ({
+        asin: r.asin!,
+        thumbnail: r.thumbnail!,
+        title: r.title ?? '',
+      }));
 
-    return asins.length > 0 ? asins : null;
+    return items.length > 0 ? items : null;
   } catch {
     return null;
   }

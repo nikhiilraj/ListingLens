@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { anthropic, ANTHROPIC_MODEL } from '../apis/anthropic';
 import { BenchmarkSchema, type Benchmark } from '../schemas/benchmark';
 import { buildBenchmarkPrompt } from '../prompts/benchmark';
-import { getAmazonProduct, searchAmazon } from '../apis/serpapi';
+import { searchAmazonRich } from '../apis/serpapi';
 import { fetchImageAsBase64 } from '../image-utils';
 import { isDevMode } from '../dev-mode';
 import { getFixtureBenchmark } from '../fixtures';
@@ -47,32 +47,22 @@ export async function runCategoryBenchmarker(
       message: `Searching "${keyword}" for top competitors...`,
     });
 
-    const competitorAsins = await searchAmazon(keyword, 5);
-    if (!competitorAsins || competitorAsins.length === 0) {
+    // Use searchAmazonRich to get thumbnails directly — avoids 5x getAmazonProduct calls
+    const competitors = await searchAmazonRich(keyword, 5);
+    if (!competitors || competitors.length === 0) {
       stream.writeData({ agent: 'benchmark', status: 'failed', message: 'No category competitors found.' });
       return null;
     }
 
-    const competitorResults = await Promise.allSettled(
-      competitorAsins.map(asin => getAmazonProduct(asin))
-    );
-
-    const validCompetitors = competitorResults
-      .map((r, i) => ({
-        asin: competitorAsins[i],
-        product: r.status === 'fulfilled' ? r.value : null,
-      }))
-      .filter((c): c is { asin: string; product: ProductData } => c.product !== null);
-
     stream.writeData({
       agent: 'benchmark',
       status: 'running',
-      message: `Fetching hero images for ${validCompetitors.length} competitors...`,
+      message: `Fetching hero images for ${competitors.length} competitors...`,
     });
 
     const [userHeroResult, ...competitorHeroResults] = await Promise.allSettled([
       fetchImageAsBase64(product.images[0]),
-      ...validCompetitors.map(c => fetchImageAsBase64(c.product.images[0])),
+      ...competitors.map(c => fetchImageAsBase64(c.thumbnail)),
     ]);
 
     if (userHeroResult.status === 'rejected') {
@@ -80,17 +70,14 @@ export async function runCategoryBenchmarker(
       return null;
     }
 
-    const validCompetitorImages = validCompetitors
-      .map((c, i) => ({
-        asin: c.asin,
-        result: competitorHeroResults[i],
-      }))
+    const validCompetitors = competitors
+      .map((c, i) => ({ asin: c.asin, result: competitorHeroResults[i] }))
       .filter((c): c is { asin: string; result: PromiseFulfilledResult<{ base64: string; mimeType: string }> } =>
         c.result.status === 'fulfilled'
       )
       .map(c => ({ asin: c.asin, ...c.result.value }));
 
-    if (validCompetitorImages.length === 0) {
+    if (validCompetitors.length === 0) {
       stream.writeData({ agent: 'benchmark', status: 'failed', message: 'Could not load any competitor images.' });
       return null;
     }
@@ -98,10 +85,10 @@ export async function runCategoryBenchmarker(
     stream.writeData({
       agent: 'benchmark',
       status: 'running',
-      message: `Analysing visual strategies across ${validCompetitorImages.length + 1} listings...`,
+      message: `Analysing visual strategies across ${validCompetitors.length + 1} listings...`,
     });
 
-    const competitorLines = validCompetitorImages
+    const competitorLines = validCompetitors
       .map((c, i) => `Image ${i + 1}: competitor ASIN ${c.asin}`)
       .join('\n');
 
@@ -121,7 +108,7 @@ export async function runCategoryBenchmarker(
               type: 'image',
               image: `data:${userHeroResult.value.mimeType};base64,${userHeroResult.value.base64}`,
             },
-            ...validCompetitorImages.map(({ base64, mimeType }) => ({
+            ...validCompetitors.map(({ base64, mimeType }) => ({
               type: 'image' as const,
               image: `data:${mimeType};base64,${base64}`,
             })),
@@ -132,17 +119,17 @@ export async function runCategoryBenchmarker(
 
     const result: Benchmark = {
       ...object,
-      competitorCount: validCompetitorImages.length,
+      competitorCount: validCompetitors.length,
       visualStrategies: object.visualStrategies.map((s, i) => ({
         ...s,
-        asin: validCompetitorImages[i]?.asin ?? s.asin,
+        asin: validCompetitors[i]?.asin ?? s.asin,
       })),
     };
 
     stream.writeData({
       agent: 'benchmark',
       status: 'complete',
-      summary: `Benchmarked against ${validCompetitorImages.length} competitors. ${result.opening.slice(0, 80)}...`,
+      summary: `Benchmarked against ${validCompetitors.length} competitors. ${result.opening.slice(0, 80)}...`,
     });
 
     return result;
