@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import ScoreCard from '@/components/report/ScoreCard';
+import PixiiBrief from '@/components/report/PixiiBrief';
 
 import type { ProductData } from '@/lib/schemas/product';
 import type { Report } from '@/lib/schemas/report';
@@ -1441,49 +1442,7 @@ export default function HomeClient() {
                   </div>
                 </div>
 
-                {/* Brief card — structured form, not a paragraph */}
-                <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-                  {(resultPayload?.report?.pixiiBrief ? [
-                    { label: 'Product category', value: resultPayload.report.pixiiBrief.productCategory },
-                    { label: 'Target customer', value: resultPayload.report.pixiiBrief.targetCustomer },
-                    { label: 'Visual style direction', value: resultPayload.report.pixiiBrief.visualDirection },
-                    { label: 'Hero shot recommendation', value: resultPayload.report.pixiiBrief.heroRecommendation },
-                    { label: 'Infographic priorities', value: resultPayload.report.pixiiBrief.infographicPriorities.join(', ') },
-                    { label: 'Trust signals to include', value: resultPayload.report.pixiiBrief.trustSignals.join(', ') },
-                    { label: 'Mobile optimisation notes', value: resultPayload.report.pixiiBrief.mobileNotes },
-                    { label: 'AI search keywords to feature', value: resultPayload.report.pixiiBrief.searchKeywords.join(', ') },
-                    { label: "What competitors aren't doing", value: resultPayload.report.pixiiBrief.competitorOpening },
-                  ] : BRIEF_FIELDS).map((field, i, arr) => (
-                    <div
-                      key={i}
-                      style={{
-                        padding: '20px 28px',
-                        borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
-                        background: i % 2 === 0 ? 'var(--white)' : 'rgba(248,247,244,0.5)',
-                      }}
-                    >
-                      <div style={{
-                        fontFamily: 'var(--font-dm-sans)',
-                        fontSize: 10,
-                        fontWeight: 600,
-                        letterSpacing: '0.10em',
-                        textTransform: 'uppercase',
-                        color: 'var(--text-tertiary)',
-                        marginBottom: 6,
-                      }}>
-                        {field.label}
-                      </div>
-                      <div style={{
-                        fontFamily: 'var(--font-dm-sans)',
-                        fontSize: 14,
-                        color: 'var(--text-primary)',
-                        lineHeight: 1.65,
-                      }}>
-                        {field.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <PixiiBrief brief={resultPayload?.report?.pixiiBrief} />
               </section>
 
             </div>
