@@ -71,6 +71,63 @@ const BRIEF_FIELDS = [
   { label: 'Mobile optimisation notes', value: 'Max 6 words per callout. Min 16px text on all images. Test every frame at 375px before upload.' },
 ];
 
+interface ImageItem {
+  id: number;
+  label: string;
+  score: number;
+  failures: { label: string; detail: string }[];
+  url?: string;
+}
+
+function ImageCard({ img }: { img: ImageItem }) {
+  return (
+    <div style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+      <div style={{
+        width: 80, height: 80, borderRadius: 8, background: 'var(--surface)',
+        flexShrink: 0, border: '1px solid var(--border)', overflow: 'hidden',
+      }}>
+        {img.url ? (
+          <img src={img.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={img.label} />
+        ) : (
+          <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id={`stripe-${img.id}`} width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="8" stroke="#e8e6e2" strokeWidth="4" />
+              </pattern>
+            </defs>
+            <rect width="80" height="80" fill={`url(#stripe-${img.id})`} />
+            <text x="40" y="44" textAnchor="middle" fontSize="9" fill="#a8a7a3" fontFamily="monospace">img {img.id}</text>
+          </svg>
+        )}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+            {img.label}
+          </span>
+          <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 500, color: scoreColor(img.score) }}>
+            {img.score}
+          </span>
+        </div>
+        {img.failures.length === 0 ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--score-high)', display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>No critical issues found</span>
+          </div>
+        ) : img.failures.map((f, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 4 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--score-low)', display: 'inline-block', flexShrink: 0, marginTop: 5 }} />
+            <div>
+              <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{f.label}</span>
+              <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, color: 'var(--text-tertiary)' }}> — {f.detail}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default async function ResultsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
@@ -215,6 +272,69 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Image analysis */}
+        <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 400ms 150ms ease forwards' }}>
+          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 16 }}>
+            Image analysis
+          </div>
+          <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '0 24px' }}>
+            {resultPayload?.visual?.images?.map((img: any) => {
+              const imageItem: ImageItem = {
+                id: img.index,
+                label: `Image ${img.index}`,
+                score: img.score,
+                failures: img.failures.map((f: any) => ({ label: f.lever, detail: f.description })),
+                url: resultPayload.product?.images?.[img.index],
+              };
+              return <ImageCard key={imageItem.id} img={imageItem} />;
+            })}
+            {!resultPayload?.visual?.images && (
+              <div style={{ padding: '24px 0', fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                No image analysis available for this report.
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Biggest conversion leak */}
+        <section style={{ background: 'var(--surface)', borderRadius: 12, padding: 28, marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 400ms 160ms ease forwards' }}>
+          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 16 }}>
+            Biggest conversion leak
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
+            <div>
+              <div style={{ background: 'var(--border)', borderRadius: 8, aspectRatio: '1/1', position: 'relative', overflow: 'hidden', marginBottom: 8 }}>
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <pattern id="hero-stripe" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                      <line x1="0" y1="0" x2="0" y2="10" stroke="#e8e6e2" strokeWidth="5" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#hero-stripe)" />
+                  <text x="50%" y="48%" textAnchor="middle" fontSize="11" fill="#a8a7a3" fontFamily="monospace">hero image</text>
+                  <text x="50%" y="58%" textAnchor="middle" fontSize="11" fill="#a8a7a3" fontFamily="monospace">drop here</text>
+                </svg>
+                <div style={{ position: 'absolute', top: '15%', left: '10%', right: '25%', bottom: '55%', border: '2px dashed var(--score-low)', borderRadius: 4, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '10%', left: '10%', background: 'rgba(220,38,38,0.08)', border: '1px solid var(--score-low)', borderRadius: 4, padding: '3px 8px', fontFamily: 'var(--font-jetbrains-mono)', fontSize: 10, color: 'var(--score-low)' }}>
+                  text too small
+                </div>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font-dm-sans)' }}>Current</div>
+            </div>
+            <div>
+              <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 8, padding: 20, marginBottom: 8, minHeight: 180 }}>
+                <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 10 }}>
+                  What it should show
+                </div>
+                <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                  {resultPayload?.report?.biggestLeak?.prescription ?? "Lead with the product's primary benefit in 5 words or fewer — large enough to read on a 375px thumbnail without pinching. Remove the secondary callout entirely; it fragments attention. Replace with a single high-contrast badge in the upper-right corner."}
+                </p>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font-dm-sans)' }}>Prescription</div>
+            </div>
           </div>
         </section>
 

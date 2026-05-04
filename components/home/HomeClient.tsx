@@ -885,13 +885,41 @@ export default function HomeClient() {
               <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 200ms forwards' }}>
                 <SectionLabel>Image analysis</SectionLabel>
                 <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '0 24px' }}>
-                  {(resultPayload?.visual?.images?.map(img => ({
-                    id: img.index,
-                    label: `Image ${img.index}`,
-                    score: img.score,
-                    failures: img.failures.map(f => ({ label: f.lever, detail: f.description })),
-                    url: resultPayload.product?.images?.[img.index]
-                  })) ?? IMAGES.map(img => ({ ...img, url: resultPayload?.product?.images?.[img.id - 1] }))).map(img => <ImageCard key={img.id} img={img} />)}
+                  {resultPayload?.visual?.images ? (
+                    resultPayload.visual.images.map(img => (
+                      <ImageCard key={img.index} img={{
+                        id: img.index,
+                        label: `Image ${img.index}`,
+                        score: img.score,
+                        failures: img.failures.map(f => ({ label: f.lever, detail: f.description })),
+                        url: resultPayload.product?.images?.[img.index]
+                      }} />
+                    ))
+                  ) : (
+                    <div style={{ padding: '32px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      {resultPayload?.product?.images?.slice(0, 3).map((url, i) => (
+                        <div key={i} style={{ display: 'flex', gap: 16 }}>
+                          <div style={{ width: 80, height: 80, borderRadius: 8, flexShrink: 0, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                            <img src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={`Loading image ${i}`} />
+                          </div>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 12 }}>
+                            <div style={{ height: 16, width: '40%', background: 'var(--border)', borderRadius: 4, animation: 'pulse-bg 1.5s ease-in-out infinite' }} />
+                            <div style={{ height: 12, width: '80%', background: 'var(--surface)', borderRadius: 4, animation: 'pulse-bg 1.5s ease-in-out infinite 200ms' }} />
+                            <div style={{ height: 12, width: '60%', background: 'var(--surface)', borderRadius: 4, animation: 'pulse-bg 1.5s ease-in-out infinite 400ms' }} />
+                          </div>
+                        </div>
+                      ))}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, color: 'var(--text-tertiary)', marginTop: 8 }}>
+                        <PulsingDot size={6} color="var(--text-tertiary)" /> <span>Analysing {resultPayload?.product?.images?.length ?? 6} images for CRO failures...</span>
+                      </div>
+                      <style dangerouslySetInnerHTML={{__html: `
+                        @keyframes pulse-bg {
+                          0%, 100% { opacity: 0.5; }
+                          50% { opacity: 1; }
+                        }
+                      `}} />
+                    </div>
+                  )}
                 </div>
               </section>
 

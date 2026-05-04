@@ -87,8 +87,8 @@ export async function runVisualAuditor(
     });
 
     return object;
-  } catch {
-    stream.writeData({ agent: 'visual', status: 'failed', message: 'Visual audit could not complete.' });
+  } catch (e) {
+    console.error(e); stream.writeData({ agent: 'visual', status: 'failed', message: 'Visual audit could not complete.' });
     return null;
   }
 }
