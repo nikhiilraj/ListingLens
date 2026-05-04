@@ -60,9 +60,10 @@ export async function runCategoryBenchmarker(
       message: `Fetching hero images for ${competitors.length} competitors...`,
     });
 
+    const heroUrl = product.images[0].replace(/_AC_SL\d+_/, '_AC_SL500_');
     const [userHeroResult, ...competitorHeroResults] = await Promise.allSettled([
-      fetchImageAsBase64(product.images[0]),
-      ...competitors.map(c => fetchImageAsBase64(c.thumbnail)),
+      fetchImageAsBase64(heroUrl),
+      ...competitors.map(c => fetchImageAsBase64(c.thumbnail.replace(/_AC_SL\d+_/, '_AC_SL500_'))),
     ]);
 
     if (userHeroResult.status === 'rejected') {

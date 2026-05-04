@@ -25,7 +25,7 @@ export async function getAmazonProduct(asin: string): Promise<ProductData | null
 
     const data = await res.json();
     const p = data.product;
-    if (!p) return null;
+    if (!p) return await getAmazonProductFallback(asin);
 
     const raw = {
       title: p.title ?? '',
@@ -40,6 +40,38 @@ export async function getAmazonProduct(asin: string): Promise<ProductData | null
       review_count: typeof p.reviews === 'number' ? p.reviews : undefined,
       bullet_points: Array.isArray(p.feature_bullets) ? p.feature_bullets : [],
       category: p.search_alias?.title ?? undefined,
+    };
+
+    const parsed = ProductDataSchema.safeParse(raw);
+    return parsed.success ? parsed.data : await getAmazonProductFallback(asin);
+  } catch {
+    return getAmazonProductFallback(asin);
+  }
+}
+
+async function getAmazonProductFallback(asin: string): Promise<ProductData | null> {
+  try {
+    const url = new URL(SEARCHAPI_BASE);
+    url.searchParams.set('engine', 'amazon_search');
+    url.searchParams.set('q', asin);
+
+    const res = await fetchWithTimeout(url.toString(), 15000);
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const results: Array<{ asin?: string; thumbnail?: string; title?: string; price?: string; rating?: number; reviews?: number }> =
+      data.organic_results ?? [];
+
+    const match = results.find(r => r.asin === asin) ?? results[0];
+    if (!match || !match.title) return null;
+
+    const raw = {
+      title: match.title,
+      images: match.thumbnail ? [match.thumbnail] : [],
+      price: match.price ?? undefined,
+      rating: typeof match.rating === 'number' ? match.rating : undefined,
+      review_count: typeof match.reviews === 'number' ? match.reviews : undefined,
+      bullet_points: [],
     };
 
     const parsed = ProductDataSchema.safeParse(raw);

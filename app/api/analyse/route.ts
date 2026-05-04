@@ -16,7 +16,7 @@ import type { ReviewIntelligence } from '../../../lib/schemas/review';
 import type { AISearch } from '../../../lib/schemas/search';
 import type { Benchmark } from '../../../lib/schemas/benchmark';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 function withTimeout<T>(p: Promise<T | null>, ms: number): Promise<T | null> {

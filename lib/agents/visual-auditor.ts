@@ -32,7 +32,7 @@ export async function runVisualAuditor(
       return fixture;
     }
 
-    const imageUrls = product.images.slice(0, 7);
+    const imageUrls = product.images.slice(0, 7).map(u => u.replace(/_AC_SL\d+_/, '_AC_SL500_'));
     const imageResults = await Promise.allSettled(imageUrls.map(url => fetchImageAsBase64(url)));
 
     const validImages: { index: number; base64: string; mimeType: string }[] = [];
@@ -41,6 +41,11 @@ export async function runVisualAuditor(
         validImages.push({ index, ...result.value });
       }
     });
+
+    if (validImages.length === 0) {
+      stream.writeData({ agent: 'visual', status: 'failed', message: 'Could not load any listing images.' });
+      return null;
+    }
 
     stream.writeData({
       agent: 'visual',
