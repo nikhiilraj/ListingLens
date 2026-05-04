@@ -187,6 +187,12 @@ function easeOutCubic(t: number) {
   return 1 - Math.pow(1 - t, 3);
 }
 
+function twoSentences(text: string): string {
+  const matches = text.match(/[^.!?]+[.!?]+/g);
+  if (!matches) return text;
+  return matches.slice(0, 2).join(' ').trim();
+}
+
 function useAnimatedCount(target: number, duration = 800, active = false) {
   const [val, setVal] = useState(0);
   useEffect(() => {
@@ -224,9 +230,8 @@ function StatusDot({ state }: { state: AgentState }) {
   if (state === 'complete') {
     return (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
-        <circle cx="10" cy="10" r="10" fill="var(--score-high)" opacity="0.15" />
-        <circle cx="10" cy="10" r="10" stroke="var(--score-high)" strokeWidth="1.5" opacity="0.4" />
-        <path d="M6.5 10l2.5 2.5 5-5" stroke="var(--score-high)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="10" cy="10" r="10" fill="#16a34a" />
+        <path d="M6 10l2.5 2.5 5.5-5.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
@@ -260,9 +265,11 @@ function AgentCard({
 
   return (
     <div style={{
-      background: isComplete ? 'rgba(22,163,74,0.04)' : 'var(--white)',
-      border: `1px solid ${isRunning ? 'rgba(17,17,16,0.15)' : isComplete ? 'rgba(22,163,74,0.22)' : 'var(--border)'}`,
-      borderLeft: isRunning ? '3px solid #111110' : isComplete ? '3px solid var(--score-high)' : '3px solid var(--border)',
+      background: isComplete ? 'rgba(22,163,74,0.06)' : 'var(--white)',
+      borderTop: `1px solid ${isRunning ? 'rgba(17,17,16,0.15)' : isComplete ? 'rgba(22,163,74,0.3)' : 'var(--border)'}`,
+      borderRight: `1px solid ${isRunning ? 'rgba(17,17,16,0.15)' : isComplete ? 'rgba(22,163,74,0.3)' : 'var(--border)'}`,
+      borderBottom: `1px solid ${isRunning ? 'rgba(17,17,16,0.15)' : isComplete ? 'rgba(22,163,74,0.3)' : 'var(--border)'}`,
+      borderLeft: isRunning ? '3px solid #111110' : isComplete ? '3px solid #16a34a' : '3px solid var(--border)',
       borderRadius: 12,
       padding: '24px 28px',
       transition: 'border-color 250ms ease, background 250ms ease, box-shadow 250ms ease',
@@ -393,24 +400,18 @@ function ScoreBar({ scores, animate }: { scores: number[]; animate: boolean }) {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      borderTop: '1px solid var(--border)',
-      paddingTop: 24,
       marginBottom: 20,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 12,
     }}>
       <span style={{
-        fontFamily: 'var(--font-dm-sans)',
+        fontFamily: 'var(--font-jetbrains-mono)',
         fontSize: 11,
-        fontWeight: 600,
-        letterSpacing: '0.10em',
+        fontWeight: 500,
+        letterSpacing: '0.20em',
         textTransform: 'uppercase',
-        color: 'var(--text-tertiary)',
+        color: '#a8a7a3',
       }}>
         {children}
       </span>
-      <span style={{ flex: 1, height: 1, background: 'transparent' }} />
     </div>
   );
 }
@@ -425,9 +426,9 @@ function SparkIcon() {
 
 function ImageCard({ img }: { img: ImageItem }) {
   function severityDotColor(sev?: 'critical' | 'major' | 'minor') {
-    if (sev === 'critical') return 'var(--score-low)';
-    if (sev === 'major') return '#f59e0b';
-    return '#9ca3af';
+    if (sev === 'critical') return '#dc2626';
+    if (sev === 'major') return '#d97706';
+    return '#a8a7a3';
   }
   function severityLabel(sev?: 'critical' | 'major' | 'minor') {
     if (sev === 'critical') return 'Critical';
@@ -503,7 +504,7 @@ function ImageCard({ img }: { img: ImageItem }) {
                     </span>
                   </div>
                   {/* Detail — second visual level */}
-                  <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, color: 'var(--text-tertiary)', lineHeight: 1.55 }}>
+                  <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: '#a8a7a3', lineHeight: 1.55, marginTop: 2 }}>
                     {f.detail}
                   </div>
                 </div>
@@ -799,10 +800,11 @@ export default function HomeClient() {
             </p>
 
             {/* URL Input */}
-            <div style={{ ...heroStyle(180), maxWidth: 640, margin: '0 auto' }}>
+            <div style={{ ...heroStyle(180), maxWidth: 600, margin: '0 auto' }}>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <input
                   type="text"
+                  className="url-input"
                   value={url}
                   onChange={e => { setUrl(e.target.value); if (urlError) setUrlError(''); }}
                   onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -822,7 +824,7 @@ export default function HomeClient() {
                     transition: 'border-color 200ms, box-shadow 200ms',
                   }}
                   onFocus={e => {
-                    e.currentTarget.style.borderColor = urlError ? 'var(--score-low)' : 'var(--text-primary)';
+                    e.currentTarget.style.borderColor = urlError ? 'var(--score-low)' : '#111110';
                     e.currentTarget.style.boxShadow = '0 0 0 4px rgba(17,17,16,0.06)';
                   }}
                   onBlur={e => {
@@ -834,8 +836,8 @@ export default function HomeClient() {
                   onClick={handleSubmit}
                   style={{
                     height: 56,
-                    padding: '0 28px',
-                    background: '#111110',
+                    padding: '0 24px',
+                    background: '#1a1a1a',
                     color: '#fff',
                     fontFamily: 'var(--font-dm-sans)',
                     fontSize: 14,
@@ -846,8 +848,8 @@ export default function HomeClient() {
                     whiteSpace: 'nowrap',
                     transition: 'background 150ms, transform 150ms',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#2a2a28'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = '#111110'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-hover)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.transform = 'translateY(0)'; }}
                   onMouseDown={e => { e.currentTarget.style.transform = 'translateY(0) scale(0.98)'; }}
                   onMouseUp={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
                 >
@@ -972,7 +974,7 @@ export default function HomeClient() {
                   lineHeight: 1.55,
                   fontWeight: 400,
                 }}>
-                  {resultPayload?.report?.verdict ?? "Strong hero image. Infographics are costing you conversions on mobile."}
+                  {twoSentences(resultPayload?.report?.verdict ?? "Strong hero image. Infographics are costing you conversions on mobile.")}
                 </p>
                 <ScoreBar
                   scores={AGENTS.map(a => a.score)}
@@ -981,7 +983,7 @@ export default function HomeClient() {
               </section>
 
               {/* 2. Image analysis */}
-              <section style={{ marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 200ms forwards' }}>
+              <section style={{ marginTop: 64, marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 200ms forwards' }}>
                 <SectionLabel>Image analysis</SectionLabel>
                 <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '0 24px' }}>
                   {resultPayload?.visual?.images?.length ? (
@@ -1012,7 +1014,7 @@ export default function HomeClient() {
               </section>
 
               {/* 3. Biggest conversion leak */}
-              <section style={{ background: 'var(--surface)', border: '1px solid rgba(220,38,38,0.12)', borderRadius: 16, padding: '32px 32px 36px', marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 280ms forwards' }}>
+              <section style={{ background: 'var(--surface)', border: '1px solid rgba(220,38,38,0.12)', borderRadius: 16, padding: '32px 32px 36px', marginTop: 64, marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 280ms forwards' }}>
                 <SectionLabel>Conversion analysis</SectionLabel>
                 <div style={{ marginBottom: 24 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
@@ -1105,7 +1107,7 @@ export default function HomeClient() {
               </section>
 
               {/* 4. Competitor comparison */}
-              <section style={{ background: 'var(--surface)', borderRadius: 16, padding: '32px 32px 36px', marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 360ms forwards' }}>
+              <section style={{ background: 'var(--surface)', borderRadius: 16, padding: '32px 32px 36px', marginTop: 64, marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 360ms forwards' }}>
                 <SectionLabel>Competitor comparison</SectionLabel>
                 <div style={{ marginBottom: 24 }}>
                   <h2 style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 22, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: '0 0 8px' }}>
@@ -1178,7 +1180,7 @@ export default function HomeClient() {
               </section>
 
               {/* 5. AI search visibility */}
-              <section style={{ marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 440ms forwards' }}>
+              <section style={{ marginTop: 64, marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 440ms forwards' }}>
                 <SectionLabel>AI search visibility</SectionLabel>
 
                 {/* Visibility score summary */}
@@ -1332,10 +1334,12 @@ export default function HomeClient() {
               </section>
 
               {/* 6. Score card */}
-              <ScoreCard resultPayload={resultPayload} />
+              <div style={{ marginTop: 64 }}>
+                <ScoreCard resultPayload={resultPayload} />
+              </div>
 
               {/* 7. Pixii brief */}
-              <section style={{ marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 600ms forwards' }}>
+              <section style={{ marginTop: 64, marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 600ms forwards' }}>
                 <SectionLabel>Design brief</SectionLabel>
 
                 {/* Header row: title + buttons side by side */}
