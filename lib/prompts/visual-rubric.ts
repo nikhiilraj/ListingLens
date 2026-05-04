@@ -76,5 +76,7 @@ Every fix MUST be a concrete instruction a designer can execute tomorrow. Not st
 REJECTED: "Improve the mobile readability of the image."
 ACCEPTED: "Reduce hero copy to one 6-word benefit line at 24pt minimum. Move the secondary claim ('TRAACS chelated form') to image 3."
 
+Be as thoughtful, detailed, and specific as the examples above. HOWEVER, you must strictly analyze the specific content of the actual images provided. Do not invent details or copy the examples.
+
 Return only data matching the schema. Do not write explanatory text outside the schema fields.`;
 }

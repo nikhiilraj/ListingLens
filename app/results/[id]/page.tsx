@@ -80,7 +80,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
-  const SCORE = resultPayload?.report?.overallScore ?? DEMO_SCORE;
+  const SCORE = resultPayload?.report?.overallScore ?? 62;
   const AGENT_SCORES = [
     resultPayload?.visual?.overallScore ?? 58,
     resultPayload?.review?.available ? 71 : 0,
@@ -215,6 +215,54 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Competitor comparison */}
+        <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 400ms 170ms ease forwards' }}>
+          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 16 }}>
+            Competitor comparison
+          </div>
+          <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+              {(['Your hero', 'Top competitor'] as const).map((label, i) => {
+                const imgUrl = i === 0 
+                  ? resultPayload?.product?.images?.[0]
+                  : resultPayload?.benchmark?.visualStrategies?.[0]?.thumbnailUrl;
+                
+                const fallbackText = i === 0 ? 'Text-heavy hero. Benefit unclear in 2 seconds.' : 'Full-bleed product, one bold stat, zero clutter.';
+                
+                const descText = i === 0
+                  ? (resultPayload?.visual?.images?.[0]?.failures?.[0]?.description ?? fallbackText)
+                  : (resultPayload?.benchmark?.visualStrategies?.[0]?.strategy ?? fallbackText);
+
+                return (
+                  <div key={i}>
+                    <div style={{ aspectRatio: '1/1', background: 'var(--surface)', borderRadius: 8, marginBottom: 8, border: '1px solid var(--border)', overflow: 'hidden' }}>
+                      {imgUrl ? (
+                        <img src={i === 0 ? imgUrl : `/api/proxy-image?url=${encodeURIComponent(imgUrl)}`} alt={label} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      ) : (
+                        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <pattern id={`comp-stripe-${i}`} width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                              <line x1="0" y1="0" x2="0" y2="10" stroke="#e8e6e2" strokeWidth="5" />
+                            </pattern>
+                          </defs>
+                          <rect width="100%" height="100%" fill={`url(#comp-stripe-${i})`} />
+                          <text x="50%" y="50%" textAnchor="middle" fontSize="11" fill="#a8a7a3" fontFamily="monospace">{label.toLowerCase()}</text>
+                        </svg>
+                      )}
+                    </div>
+                    <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      {descText}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+              {resultPayload?.benchmark?.gapAnalysis ?? "The top competitor leads with a single product stat at 48px. Your hero uses 4 callouts at 12px. On mobile, none of yours are legible — their single callout is. That gap explains a significant portion of the click-through rate difference."}
+            </div>
           </div>
         </section>
 

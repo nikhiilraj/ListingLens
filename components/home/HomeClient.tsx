@@ -937,24 +937,40 @@ export default function HomeClient() {
                 <SectionLabel>Competitor comparison</SectionLabel>
                 <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: 24 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
-                    {(['Your hero', 'Top competitor'] as const).map((label, i) => (
-                      <div key={i}>
-                        <div style={{ aspectRatio: '1/1', background: 'var(--surface)', borderRadius: 8, marginBottom: 8, border: '1px solid var(--border)', overflow: 'hidden' }}>
-                          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                              <pattern id={`comp-stripe-${i}`} width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                                <line x1="0" y1="0" x2="0" y2="10" stroke="#e8e6e2" strokeWidth="5" />
-                              </pattern>
-                            </defs>
-                            <rect width="100%" height="100%" fill={`url(#comp-stripe-${i})`} />
-                            <text x="50%" y="50%" textAnchor="middle" fontSize="11" fill="#a8a7a3" fontFamily="monospace">{label.toLowerCase()}</text>
-                          </svg>
+                    {(['Your hero', 'Top competitor'] as const).map((label, i) => {
+                      const imgUrl = i === 0 
+                        ? resultPayload?.product?.images?.[0]
+                        : resultPayload?.benchmark?.visualStrategies?.[0]?.thumbnailUrl;
+                      
+                      const fallbackText = i === 0 ? 'Text-heavy hero. Benefit unclear in 2 seconds.' : 'Full-bleed product, one bold stat, zero clutter.';
+                      
+                      const descText = i === 0
+                        ? (resultPayload?.visual?.images?.[0]?.failures?.[0]?.description ?? fallbackText)
+                        : (resultPayload?.benchmark?.visualStrategies?.[0]?.strategy ?? fallbackText);
+
+                      return (
+                        <div key={i}>
+                          <div style={{ aspectRatio: '1/1', background: 'var(--surface)', borderRadius: 8, marginBottom: 8, border: '1px solid var(--border)', overflow: 'hidden' }}>
+                            {imgUrl ? (
+                              <img src={i === 0 ? imgUrl : `/api/proxy-image?url=${encodeURIComponent(imgUrl)}`} alt={label} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                            ) : (
+                              <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                  <pattern id={`comp-stripe-${i}`} width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                                    <line x1="0" y1="0" x2="0" y2="10" stroke="#e8e6e2" strokeWidth="5" />
+                                  </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill={`url(#comp-stripe-${i})`} />
+                                <text x="50%" y="50%" textAnchor="middle" fontSize="11" fill="#a8a7a3" fontFamily="monospace">{label.toLowerCase()}</text>
+                              </svg>
+                            )}
+                          </div>
+                          <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                            {descText}
+                          </p>
                         </div>
-                        <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                          {i === 0 ? 'Text-heavy hero. Benefit unclear in 2 seconds.' : 'Full-bleed product, one bold stat, zero clutter.'}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
                     {resultPayload?.benchmark?.gapAnalysis ?? "The top competitor leads with a single product stat at 48px. Your hero uses 4 callouts at 12px. On mobile, none of yours are legible — their single callout is. That gap explains a significant portion of the click-through rate difference."}

@@ -5,6 +5,7 @@ export const BenchmarkSchema = z.object({
   visualStrategies: z.array(
     z.object({
       asin: z.string(),
+      thumbnailUrl: z.string().optional(),
       strategy: z.string(),
       hookLine: z.string(),
     })

@@ -81,7 +81,7 @@ export async function POST(request: Request): Promise<Response> {
         send({ type: 'started', asin });
 
         if (!isDevMode()) {
-          const cached = await redis.get<CachedResult>(`cache:v2:asin:${asin}`);
+          const cached = await redis.get<CachedResult>(`cache:v3:asin:${asin}`);
           if (cached) {
             send({ type: 'product', data: cached.product });
             send({ type: 'complete', id: cached.id, cached: true, payload: cached });
@@ -127,7 +127,7 @@ export async function POST(request: Request): Promise<Response> {
         if (!isDevMode()) {
           await Promise.all([
             redis.set(`result:${id}`, resultPayload, { ex: 30 * 24 * 60 * 60 }),
-            redis.set(`cache:v2:asin:${asin}`, resultPayload, { ex: 24 * 60 * 60 }),
+            redis.set(`cache:v3:asin:${asin}`, resultPayload, { ex: 24 * 60 * 60 }),
           ]);
         }
 

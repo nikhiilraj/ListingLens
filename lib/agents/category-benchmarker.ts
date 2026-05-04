@@ -71,11 +71,11 @@ export async function runCategoryBenchmarker(
     }
 
     const validCompetitors = competitors
-      .map((c, i) => ({ asin: c.asin, result: competitorHeroResults[i] }))
-      .filter((c): c is { asin: string; result: PromiseFulfilledResult<{ base64: string; mimeType: string }> } =>
+      .map((c, i) => ({ asin: c.asin, thumbnail: c.thumbnail, result: competitorHeroResults[i] }))
+      .filter((c): c is { asin: string; thumbnail: string; result: PromiseFulfilledResult<{ base64: string; mimeType: string }> } =>
         c.result.status === 'fulfilled'
       )
-      .map(c => ({ asin: c.asin, ...c.result.value }));
+      .map(c => ({ asin: c.asin, thumbnail: c.thumbnail, ...c.result.value }));
 
     if (validCompetitors.length === 0) {
       stream.writeData({ agent: 'benchmark', status: 'failed', message: 'Could not load any competitor images.' });
@@ -123,6 +123,7 @@ export async function runCategoryBenchmarker(
       visualStrategies: object.visualStrategies.map((s, i) => ({
         ...s,
         asin: validCompetitors[i]?.asin ?? s.asin,
+        thumbnailUrl: validCompetitors[i]?.thumbnail,
       })),
     };
 

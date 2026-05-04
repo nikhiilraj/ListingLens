@@ -60,10 +60,16 @@ export async function runVisualAuditor(
               type: 'text',
               text: `Audit these ${validImages.length} listing images in carousel order. Image 0 is the hero. Apply all 12 CRO levers. Every failure must meet the specificity standard in the rubric.`,
             },
-            ...validImages.map(({ base64, mimeType }) => ({
-              type: 'image' as const,
-              image: `data:${mimeType};base64,${base64}`,
-            })),
+            ...validImages.flatMap(({ base64, mimeType }, idx) => [
+              {
+                type: 'text' as const,
+                text: `Image ${idx}:`,
+              },
+              {
+                type: 'image' as const,
+                image: `data:${mimeType};base64,${base64}`,
+              }
+            ]),
           ],
         },
       ],
