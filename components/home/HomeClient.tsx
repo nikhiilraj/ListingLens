@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
+import ScoreCard from '@/components/report/ScoreCard';
 
 import type { ProductData } from '@/lib/schemas/product';
 import type { Report } from '@/lib/schemas/report';
@@ -928,20 +929,25 @@ export default function HomeClient() {
                 <SectionLabel>Biggest conversion leak</SectionLabel>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
                   <div>
-                    <div style={{ background: 'var(--border)', borderRadius: 8, aspectRatio: '1/1', position: 'relative', overflow: 'hidden', marginBottom: 8 }}>
-                      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                          <pattern id="hero-stripe" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                            <line x1="0" y1="0" x2="0" y2="10" stroke="#e8e6e2" strokeWidth="5" />
-                          </pattern>
-                        </defs>
-                        <rect width="100%" height="100%" fill="url(#hero-stripe)" />
-                        <text x="50%" y="48%" textAnchor="middle" fontSize="11" fill="#a8a7a3" fontFamily="monospace">hero image</text>
-                        <text x="50%" y="58%" textAnchor="middle" fontSize="11" fill="#a8a7a3" fontFamily="monospace">drop here</text>
-                      </svg>
-                      <div style={{ position: 'absolute', top: '15%', left: '10%', right: '25%', bottom: '55%', border: '2px dashed var(--score-low)', borderRadius: 4, pointerEvents: 'none' }} />
-                      <div style={{ position: 'absolute', bottom: '10%', left: '10%', background: 'rgba(220,38,38,0.08)', border: '1px solid var(--score-low)', borderRadius: 4, padding: '3px 8px', fontFamily: 'var(--font-jetbrains-mono)', fontSize: 10, color: 'var(--score-low)' }}>
-                        text too small
+                    <div style={{ background: 'var(--border)', borderRadius: 8, aspectRatio: '1/1', position: 'relative', overflow: 'hidden', marginBottom: 8, border: '1px solid var(--border)' }}>
+                      {resultPayload?.product?.images?.[resultPayload.report?.biggestLeak?.imageIndex ?? 0] ? (
+                        <img 
+                          src={resultPayload.product.images[resultPayload.report?.biggestLeak?.imageIndex ?? 0]} 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          alt="Biggest leak" 
+                        />
+                      ) : (
+                        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <pattern id="hero-stripe" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                              <line x1="0" y1="0" x2="0" y2="10" stroke="#e8e6e2" strokeWidth="5" />
+                            </pattern>
+                          </defs>
+                          <rect width="100%" height="100%" fill="url(#hero-stripe)" />
+                        </svg>
+                      )}
+                      <div style={{ position: 'absolute', bottom: '10%', left: '10%', right: '10%', background: 'rgba(220,38,38,0.95)', border: '1px solid var(--score-low)', borderRadius: 6, padding: '6px 10px', fontFamily: 'var(--font-dm-sans)', fontSize: 12, fontWeight: 500, color: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                        {resultPayload?.report?.biggestLeak?.description ?? "Hero image text unreadable at 375px"}
                       </div>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font-dm-sans)' }}>Current</div>
@@ -1031,66 +1037,7 @@ export default function HomeClient() {
               </section>
 
               {/* 6. Score card */}
-              <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 520ms forwards' }}>
-                <SectionLabel>Shareable score card</SectionLabel>
-                <div style={{ background: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 12, padding: 24, maxWidth: 480, margin: '0 auto 16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--text-tertiary)' }} />
-                      <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--text-tertiary)' }}>ListingLens</span>
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 500, color: scoreColor(resultPayload?.report?.overallScore ?? DEMO_SCORE), background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 10px' }}>
-                      {resultPayload?.report?.overallScore ?? DEMO_SCORE} · {scoreGrade(resultPayload?.report?.overallScore ?? DEMO_SCORE)}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
-                    <div style={{ width: 64, height: 64, borderRadius: 8, background: 'var(--border)', flexShrink: 0, overflow: 'hidden' }}>
-                      {resultPayload?.product?.images?.[0] ? (
-                        <img src={resultPayload.product.images[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        <svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">
-                          <defs>
-                            <pattern id="thumb-stripe" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                              <line x1="0" y1="0" x2="0" y2="8" stroke="#e8e6e2" strokeWidth="4" />
-                            </pattern>
-                          </defs>
-                          <rect width="64" height="64" fill="url(#thumb-stripe)" />
-                        </svg>
-                      )}
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>
-                        {resultPayload?.product?.title ? (resultPayload.product.title.slice(0, 40) + '...') : 'Premium Desk Mat'}
-                      </div>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        {['Images: ✗', 'Reviews: ✓', 'AI: ✗'].map((t, i) => (
-                          <span key={i} style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, color: 'var(--text-tertiary)', background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px' }}>{t}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
-                    {[
-                      'Hero image text unreadable at 375px — affects 61% of shoppers',
-                      'Missing from 4 of 6 AI search results for key queries',
-                      'Competitor leads with single-stat hero; yours uses 4 callouts',
-                    ].map((bullet, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                        <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--score-low)', flexShrink: 0, marginTop: 7 }} />
-                        <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{bullet}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12 }}>
-                    <a href="https://pixii.ai" target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--text-tertiary)', textDecoration: 'none' }}>
-                      Get this fixed with Pixii →
-                    </a>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <button className="btn-ghost">Download score card</button>
-                </div>
-              </section>
+              <ScoreCard resultPayload={resultPayload} />
 
               {/* 7. Pixii brief */}
               <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 600ms forwards' }}>

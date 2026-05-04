@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
+import ScoreCard from '@/components/report/ScoreCard';
 import { redis } from '@/lib/redis';
 import type { ProductData } from '@/lib/schemas/product';
 import type { Report } from '@/lib/schemas/report';
@@ -306,20 +307,25 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
             <div>
-              <div style={{ background: 'var(--border)', borderRadius: 8, aspectRatio: '1/1', position: 'relative', overflow: 'hidden', marginBottom: 8 }}>
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <pattern id="hero-stripe" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                      <line x1="0" y1="0" x2="0" y2="10" stroke="#e8e6e2" strokeWidth="5" />
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#hero-stripe)" />
-                  <text x="50%" y="48%" textAnchor="middle" fontSize="11" fill="#a8a7a3" fontFamily="monospace">hero image</text>
-                  <text x="50%" y="58%" textAnchor="middle" fontSize="11" fill="#a8a7a3" fontFamily="monospace">drop here</text>
-                </svg>
-                <div style={{ position: 'absolute', top: '15%', left: '10%', right: '25%', bottom: '55%', border: '2px dashed var(--score-low)', borderRadius: 4, pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', bottom: '10%', left: '10%', background: 'rgba(220,38,38,0.08)', border: '1px solid var(--score-low)', borderRadius: 4, padding: '3px 8px', fontFamily: 'var(--font-jetbrains-mono)', fontSize: 10, color: 'var(--score-low)' }}>
-                  text too small
+              <div style={{ background: 'var(--border)', borderRadius: 8, aspectRatio: '1/1', position: 'relative', overflow: 'hidden', marginBottom: 8, border: '1px solid var(--border)' }}>
+                {resultPayload?.product?.images?.[resultPayload.report?.biggestLeak?.imageIndex ?? 0] ? (
+                  <img 
+                    src={resultPayload.product.images[resultPayload.report?.biggestLeak?.imageIndex ?? 0]} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    alt="Biggest leak" 
+                  />
+                ) : (
+                  <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <pattern id="hero-stripe" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                        <line x1="0" y1="0" x2="0" y2="10" stroke="#e8e6e2" strokeWidth="5" />
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#hero-stripe)" />
+                  </svg>
+                )}
+                <div style={{ position: 'absolute', bottom: '10%', left: '10%', right: '10%', background: 'rgba(220,38,38,0.95)', border: '1px solid var(--score-low)', borderRadius: 6, padding: '6px 10px', fontFamily: 'var(--font-dm-sans)', fontSize: 12, fontWeight: 500, color: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                  {resultPayload?.report?.biggestLeak?.description ?? "Hero image text unreadable at 375px"}
                 </div>
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font-dm-sans)' }}>Current</div>
@@ -386,7 +392,6 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
           </div>
         </section>
 
-        {/* AI search */}
         <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 400ms 200ms ease forwards' }}>
           <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 16 }}>
             AI search visibility
@@ -434,6 +439,9 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
         </section>
+
+        {/* Shareable score card */}
+        <ScoreCard resultPayload={resultPayload} />
 
         {/* CTA banner */}
         <div style={{
