@@ -2,7 +2,6 @@
 
 import { useRef, useCallback } from 'react';
 import { toPng } from 'html-to-image';
-import type { CachedResult } from '@/lib/schemas/report'; // Assuming this exists or using any
 
 function scoreColor(s: number) {
   if (s >= 75) return 'var(--score-high)';
