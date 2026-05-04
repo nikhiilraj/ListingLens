@@ -891,7 +891,7 @@ export default function HomeClient() {
                     score: img.score,
                     failures: img.failures.map(f => ({ label: f.lever, detail: f.description })),
                     url: resultPayload.product?.images?.[img.index]
-                  })) ?? IMAGES).map(img => <ImageCard key={img.id} img={img} />)}
+                  })) ?? IMAGES.map(img => ({ ...img, url: resultPayload?.product?.images?.[img.id - 1] }))).map(img => <ImageCard key={img.id} img={img} />)}
                 </div>
               </section>
 
