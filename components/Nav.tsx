@@ -9,9 +9,7 @@ interface NavProps {
 
 const NAV_LINKS = [
   { label: 'How it works', href: '/how-it-works' },
-  { label: 'API', href: '/api-docs' },
-  { label: 'Changelog', href: '/changelog' },
-  { label: 'Built with', href: '/built-with' },
+  { label: 'Built with →', href: '/built-with' },
 ];
 
 export default function Nav({ variant = 'default' }: NavProps) {
@@ -57,15 +55,6 @@ export default function Nav({ variant = 'default' }: NavProps) {
               {link.label}
             </Link>
           ))}
-          <a
-            href="https://pixii.ai"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="nav-cta"
-            style={{ background: 'var(--accent)' }}
-          >
-            Built for Pixii →
-          </a>
         </div>
       )}
 

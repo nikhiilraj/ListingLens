@@ -40,7 +40,7 @@ interface ImageItem {
   id: number;
   label: string;
   score: number;
-  failures: { label: string; detail: string }[];
+  failures: { label: string; detail: string; severity?: 'critical' | 'major' | 'minor' }[];
   url?: string;
 }
 
@@ -117,28 +117,28 @@ const IMAGES: ImageItem[] = [
   {
     id: 1, label: 'Hero image', score: 48,
     failures: [
-      { label: 'Text too small on mobile', detail: '11 words of 8px text are illegible on a 375px screen.' },
-      { label: 'No focal point in first 3 seconds', detail: 'Eye-tracking patterns show no clear anchor.' },
+      { label: 'Text too small on mobile', detail: '11 words of 8px text are illegible on a 375px screen.', severity: 'critical' },
+      { label: 'No focal point in first 3 seconds', detail: 'Eye-tracking patterns show no clear anchor.', severity: 'major' },
     ],
   },
   {
     id: 2, label: 'Lifestyle shot', score: 74,
     failures: [
-      { label: 'Background competes with product', detail: 'High-contrast props draw attention away from the item.' },
+      { label: 'Background competes with product', detail: 'High-contrast props draw attention away from the item.', severity: 'major' },
     ],
   },
   {
     id: 3, label: 'Infographic 1', score: 52,
     failures: [
-      { label: 'Hierarchy unclear', detail: 'Three competing headline sizes create confusion.' },
-      { label: 'Benefit buried in paragraph 3', detail: 'Key differentiator is on the 6th line of copy.' },
+      { label: 'Hierarchy unclear', detail: 'Three competing headline sizes create confusion.', severity: 'critical' },
+      { label: 'Benefit buried in paragraph 3', detail: 'Key differentiator is on the 6th line of copy.', severity: 'major' },
     ],
   },
   { id: 4, label: 'Infographic 2', score: 81, failures: [] },
   {
     id: 5, label: 'Size chart', score: 66,
     failures: [
-      { label: 'Font size below 12px', detail: 'Measurement values unreadable without zoom.' },
+      { label: 'Font size below 12px', detail: 'Measurement values unreadable without zoom.', severity: 'minor' },
     ],
   },
 ];
@@ -205,7 +205,7 @@ function useAnimatedCount(target: number, duration = 800, active = false) {
 }
 
 // ── Sub-components ────────────────────────────────────────────────
-function PulsingDot({ color = '#16a34a', size = 8 }: { color?: string; size?: number }) {
+function PulsingDot({ color = '#15803d', size = 10 }: { color?: string; size?: number }) {
   return (
     <span style={{
       display: 'inline-block',
@@ -214,6 +214,7 @@ function PulsingDot({ color = '#16a34a', size = 8 }: { color?: string; size?: nu
       borderRadius: '50%',
       background: color,
       flexShrink: 0,
+      boxShadow: `0 0 0 3px ${color}33`,
       animation: 'pulse-green 1.2s ease infinite',
     }} />
   );
@@ -222,18 +223,19 @@ function PulsingDot({ color = '#16a34a', size = 8 }: { color?: string; size?: nu
 function StatusDot({ state }: { state: AgentState }) {
   if (state === 'complete') {
     return (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-        <circle cx="8" cy="8" r="8" fill="var(--score-high)" opacity="0.12" />
-        <path d="M5 8l2 2 4-4" stroke="var(--score-high)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+        <circle cx="10" cy="10" r="10" fill="var(--score-high)" opacity="0.15" />
+        <circle cx="10" cy="10" r="10" stroke="var(--score-high)" strokeWidth="1.5" opacity="0.4" />
+        <path d="M6.5 10l2.5 2.5 5-5" stroke="var(--score-high)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
-  if (state === 'running') return <PulsingDot color="#16a34a" size={8} />;
+  if (state === 'running') return <PulsingDot color="#15803d" size={10} />;
   return (
     <span style={{
       display: 'inline-block',
-      width: 8,
-      height: 8,
+      width: 10,
+      height: 10,
       borderRadius: '50%',
       background: 'var(--border)',
       flexShrink: 0,
@@ -258,58 +260,78 @@ function AgentCard({
 
   return (
     <div style={{
-      background: isComplete ? 'rgba(22,163,74,0.03)' : 'var(--white)',
-      border: `0.5px solid ${isRunning ? 'rgba(17,17,16,0.18)' : isComplete ? 'rgba(22,163,74,0.2)' : 'var(--border)'}`,
-      borderLeft: isRunning ? '3px solid var(--text-primary)' : isComplete ? '3px solid var(--score-high)' : '3px solid transparent',
+      background: isComplete ? 'rgba(22,163,74,0.04)' : 'var(--white)',
+      border: `1px solid ${isRunning ? 'rgba(17,17,16,0.15)' : isComplete ? 'rgba(22,163,74,0.22)' : 'var(--border)'}`,
+      borderLeft: isRunning ? '3px solid #111110' : isComplete ? '3px solid var(--score-high)' : '3px solid var(--border)',
       borderRadius: 12,
-      padding: '20px 24px',
-      transition: 'border-color 200ms ease, background 200ms ease',
+      padding: '24px 28px',
+      transition: 'border-color 250ms ease, background 250ms ease, box-shadow 250ms ease',
+      boxShadow: isRunning ? '0 2px 12px rgba(0,0,0,0.06)' : 'none',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(12px)',
-      transitionProperty: 'opacity, transform, border-color, background',
-      transitionDuration: '500ms, 500ms, 200ms, 200ms',
-      transitionDelay: `${delay}ms, ${delay}ms, 0ms, 0ms`,
+      transitionProperty: 'opacity, transform, border-color, background, box-shadow',
+      transitionDuration: '500ms, 500ms, 250ms, 250ms, 250ms',
+      transitionDelay: `${delay}ms, ${delay}ms, 0ms, 0ms, 0ms`,
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <div style={{ paddingTop: 3 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <div style={{ paddingTop: 4 }}>
           <StatusDot state={state} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontFamily: 'var(--font-dm-sans)',
-            fontSize: 14,
-            fontWeight: isWaiting ? 400 : 500,
+            fontSize: 15,
+            fontWeight: isWaiting ? 400 : 600,
             color: isWaiting ? 'var(--text-secondary)' : 'var(--text-primary)',
-            marginBottom: 6,
-            letterSpacing: '-0.01em',
+            marginBottom: 8,
+            letterSpacing: '-0.02em',
           }}>
             {agent.title}
           </div>
           <div style={{
-            fontFamily: isWaiting ? 'var(--font-dm-sans)' : 'var(--font-jetbrains-mono)',
-            fontSize: 12,
-            color: 'var(--text-secondary)',
+            fontFamily: 'var(--font-jetbrains-mono)',
+            fontSize: 13,
             lineHeight: 1.7,
-            minHeight: 20,
+            minHeight: 22,
           }}>
-            {isWaiting && <span style={{ color: 'var(--text-tertiary)' }}>Waiting…</span>}
+            {isWaiting && (
+              <span style={{ color: 'var(--text-tertiary)', fontFamily: 'var(--font-dm-sans)', fontSize: 13 }}>Queued</span>
+            )}
             {isRunning && streamedLines.map((line, i) => (
               <div key={i} style={{
-                color: i < streamedLines.length - 1 ? 'rgba(107,106,103,0.55)' : 'var(--text-secondary)',
+                color: i < streamedLines.length - 1 ? 'rgba(107,106,103,0.45)' : 'var(--text-secondary)',
                 transition: 'color 300ms ease',
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: 6,
               }}>
+                <span style={{
+                  color: i < streamedLines.length - 1 ? 'rgba(107,106,103,0.3)' : 'var(--text-tertiary)',
+                  fontSize: 11,
+                  lineHeight: 1,
+                  flexShrink: 0,
+                }}>›</span>
                 {line}
               </div>
             ))}
-            {isComplete && <span>{summary ?? agent.summary}</span>}
+            {isComplete && (
+              <span style={{
+                color: 'var(--score-high)',
+                fontWeight: 500,
+                fontSize: 13,
+              }}>
+                {summary ?? agent.summary}
+              </span>
+            )}
           </div>
         </div>
         {isRunning && elapsed !== undefined && elapsed > 0 && (
           <div style={{
             fontFamily: 'var(--font-jetbrains-mono)',
-            fontSize: 11,
+            fontSize: 12,
             color: 'var(--text-tertiary)',
             flexShrink: 0,
+            paddingTop: 2,
           }}>
             {elapsed}s
           </div>
@@ -317,10 +339,11 @@ function AgentCard({
         {isComplete && (
           <div style={{
             fontFamily: 'var(--font-jetbrains-mono)',
-            fontSize: 13,
-            fontWeight: 500,
+            fontSize: 15,
+            fontWeight: 600,
             color: scoreColor(agent.score),
             flexShrink: 0,
+            letterSpacing: '-0.02em',
           }}>
             {agent.score}
           </div>
@@ -337,12 +360,12 @@ function ScoreBar({ scores, animate }: { scores: number[]; animate: boolean }) {
 
   return (
     <div style={{ maxWidth: 560, margin: '0 auto', width: '100%' }}>
-      <div style={{ display: 'flex', borderRadius: 4, overflow: 'hidden', height: 8, gap: 2, marginBottom: 10 }}>
+      <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', height: 10, gap: 2, marginBottom: 12 }}>
         {widths.map((w, i) => (
           <div key={i} style={{
             height: '100%',
             background: scoreColor(scores[i]),
-            borderRadius: 2,
+            borderRadius: 3,
             width: animate ? `${w}%` : '0%',
             transition: `width 600ms cubic-bezier(0.16,1,0.3,1) ${100 * i + 200}ms`,
           }} />
@@ -352,12 +375,14 @@ function ScoreBar({ scores, animate }: { scores: number[]; animate: boolean }) {
         {labels.map((label, i) => (
           <div key={i} style={{
             flex: widths[i] / 100,
-            fontSize: 11,
-            color: 'var(--text-tertiary)',
             fontFamily: 'var(--font-dm-sans)',
-            letterSpacing: '0.02em',
           }}>
-            {label}
+            <div style={{ fontSize: 11, color: 'var(--text-tertiary)', letterSpacing: '0.02em', marginBottom: 1 }}>
+              {label}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: scoreColor(scores[i]), fontFamily: 'var(--font-jetbrains-mono)', letterSpacing: '-0.01em' }}>
+              {scores[i]}
+            </div>
           </div>
         ))}
       </div>
@@ -368,15 +393,24 @@ function ScoreBar({ scores, animate }: { scores: number[]; animate: boolean }) {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontFamily: 'var(--font-dm-sans)',
-      fontSize: 11,
-      fontWeight: 500,
-      letterSpacing: '0.08em',
-      textTransform: 'uppercase',
-      color: 'var(--text-tertiary)',
-      marginBottom: 16,
+      borderTop: '1px solid var(--border)',
+      paddingTop: 24,
+      marginBottom: 20,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
     }}>
-      {children}
+      <span style={{
+        fontFamily: 'var(--font-dm-sans)',
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: '0.10em',
+        textTransform: 'uppercase',
+        color: 'var(--text-tertiary)',
+      }}>
+        {children}
+      </span>
+      <span style={{ flex: 1, height: 1, background: 'transparent' }} />
     </div>
   );
 }
@@ -390,49 +424,93 @@ function SparkIcon() {
 }
 
 function ImageCard({ img }: { img: ImageItem }) {
+  function severityDotColor(sev?: 'critical' | 'major' | 'minor') {
+    if (sev === 'critical') return 'var(--score-low)';
+    if (sev === 'major') return '#f59e0b';
+    return '#9ca3af';
+  }
+  function severityLabel(sev?: 'critical' | 'major' | 'minor') {
+    if (sev === 'critical') return 'Critical';
+    if (sev === 'major') return 'Major';
+    return 'Minor';
+  }
+
   return (
-    <div style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+    <div style={{ display: 'flex', gap: 20, padding: '20px 0', borderBottom: '1px solid var(--border)' }}>
+      {/* Thumbnail */}
       <div style={{
-        width: 80, height: 80, borderRadius: 8, background: 'var(--surface)',
+        width: 96, height: 96, borderRadius: 10, background: 'var(--surface)',
         flexShrink: 0, border: '1px solid var(--border)', overflow: 'hidden',
       }}>
         {img.url ? (
           <img src={img.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={img.label} />
         ) : (
-          <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+          <svg width="96" height="96" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id={`stripe-${img.id}`} width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
                 <line x1="0" y1="0" x2="0" y2="8" stroke="#e8e6e2" strokeWidth="4" />
               </pattern>
             </defs>
-            <rect width="80" height="80" fill={`url(#stripe-${img.id})`} />
-            <text x="40" y="44" textAnchor="middle" fontSize="9" fill="#a8a7a3" fontFamily="monospace">img {img.id}</text>
+            <rect width="96" height="96" fill={`url(#stripe-${img.id})`} />
+            <text x="48" y="52" textAnchor="middle" fontSize="9" fill="#a8a7a3" fontFamily="monospace">img {img.id}</text>
           </svg>
         )}
       </div>
+
+      {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+        {/* Header row: label + score */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
             {img.label}
           </span>
-          <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 500, color: scoreColor(img.score) }}>
+          <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 14, fontWeight: 600, color: scoreColor(img.score), letterSpacing: '-0.02em' }}>
             {img.score}
           </span>
         </div>
+
+        {/* Failures */}
         {img.failures.length === 0 ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--score-high)', display: 'inline-block', flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>No critical issues found</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--score-high)', display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: 'var(--text-tertiary)', fontFamily: 'var(--font-dm-sans)' }}>No critical issues found</span>
           </div>
-        ) : img.failures.map((f, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 4 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--score-low)', display: 'inline-block', flexShrink: 0, marginTop: 5 }} />
-            <div>
-              <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{f.label}</span>
-              <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, color: 'var(--text-tertiary)' }}> — {f.detail}</span>
-            </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {img.failures.map((f, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                {/* Severity dot */}
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: severityDotColor(f.severity),
+                  display: 'inline-block', flexShrink: 0, marginTop: 5,
+                }} />
+                <div>
+                  {/* Severity badge + failure label */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                    <span style={{
+                      fontFamily: 'var(--font-dm-sans)',
+                      fontSize: 10,
+                      fontWeight: 600,
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      color: severityDotColor(f.severity),
+                    }}>
+                      {severityLabel(f.severity)}
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>
+                      {f.label}
+                    </span>
+                  </div>
+                  {/* Detail — second visual level */}
+                  <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, color: 'var(--text-tertiary)', lineHeight: 1.55 }}>
+                    {f.detail}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -757,7 +835,7 @@ export default function HomeClient() {
                   style={{
                     height: 56,
                     padding: '0 28px',
-                    background: 'var(--accent)',
+                    background: '#111110',
                     color: '#fff',
                     fontFamily: 'var(--font-dm-sans)',
                     fontSize: 14,
@@ -768,8 +846,8 @@ export default function HomeClient() {
                     whiteSpace: 'nowrap',
                     transition: 'background 150ms, transform 150ms',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-hover)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#2a2a28'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#111110'; e.currentTarget.style.transform = 'translateY(0)'; }}
                   onMouseDown={e => { e.currentTarget.style.transform = 'translateY(0) scale(0.98)'; }}
                   onMouseUp={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
                 >
@@ -850,29 +928,49 @@ export default function HomeClient() {
             <div style={{ opacity: 1, animation: 'fadeSlideUp 500ms ease forwards' }}>
 
               {/* 1. Overall Score */}
-              <section style={{ textAlign: 'center', padding: '40px 0 32px' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
+              <section style={{ textAlign: 'center', padding: '40px 0 36px' }}>
+                {/* Score + grade row */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 12 }}>
                   <span style={{
                     fontFamily: 'var(--font-dm-sans)',
-                    fontSize: 72,
+                    fontSize: 80,
                     fontWeight: 700,
-                    letterSpacing: '-0.04em',
+                    letterSpacing: '-0.05em',
                     lineHeight: 1,
                     color: scoreColor(animatedScore),
                     transition: 'color 300ms ease',
                   }}>
                     {animatedScore}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 32, fontWeight: 500, color: scoreColor(resultPayload?.report?.overallScore ?? DEMO_SCORE) }}>
+                  <span style={{
+                    fontFamily: 'var(--font-dm-sans)',
+                    fontSize: 40,
+                    fontWeight: 300,
+                    color: 'var(--border)',
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1,
+                    margin: '0 10px',
+                    userSelect: 'none',
+                  }}>/</span>
+                  <span style={{
+                    fontFamily: 'var(--font-dm-sans)',
+                    fontSize: 48,
+                    fontWeight: 700,
+                    letterSpacing: '-0.03em',
+                    lineHeight: 1,
+                    color: scoreColor(resultPayload?.report?.overallScore ?? DEMO_SCORE),
+                  }}>
                     {scoreGrade(resultPayload?.report?.overallScore ?? DEMO_SCORE)}
                   </span>
                 </div>
                 <p style={{
                   fontFamily: 'var(--font-dm-sans)',
-                  fontSize: 16,
-                  color: 'var(--text-secondary)',
+                  fontSize: 17,
+                  color: 'var(--text-primary)',
                   maxWidth: 480,
-                  margin: '0 auto 28px',
+                  margin: '0 auto 32px',
+                  lineHeight: 1.55,
+                  fontWeight: 400,
                 }}>
                   {resultPayload?.report?.verdict ?? "Strong hero image. Infographics are costing you conversions on mobile."}
                 </p>
@@ -883,7 +981,7 @@ export default function HomeClient() {
               </section>
 
               {/* 2. Image analysis */}
-              <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 200ms forwards' }}>
+              <section style={{ marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 200ms forwards' }}>
                 <SectionLabel>Image analysis</SectionLabel>
                 <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '0 24px' }}>
                   {resultPayload?.visual?.images?.length ? (
@@ -892,7 +990,7 @@ export default function HomeClient() {
                         id: img.index,
                         label: `Image ${img.index}`,
                         score: img.score,
-                        failures: img.failures.map(f => ({ label: f.lever, detail: f.description })),
+                        failures: img.failures.map(f => ({ label: f.lever, detail: f.description, severity: f.severity })),
                         url: resultPayload.product?.images?.[img.index]
                       }} />
                     ))
@@ -914,11 +1012,28 @@ export default function HomeClient() {
               </section>
 
               {/* 3. Biggest conversion leak */}
-              <section style={{ background: 'var(--surface)', borderRadius: 12, padding: 28, marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 280ms forwards' }}>
-                <SectionLabel>Biggest conversion leak</SectionLabel>
+              <section style={{ background: 'var(--surface)', border: '1px solid rgba(220,38,38,0.12)', borderRadius: 16, padding: '32px 32px 36px', marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 280ms forwards' }}>
+                <SectionLabel>Conversion analysis</SectionLabel>
+                <div style={{ marginBottom: 24 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, background: 'rgba(220,38,38,0.1)', flexShrink: 0 }}>
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 1L13 13H1L7 1Z" stroke="var(--score-low)" strokeWidth="1.5" strokeLinejoin="round" />
+                        <path d="M7 5.5V8" stroke="var(--score-low)" strokeWidth="1.5" strokeLinecap="round" />
+                        <circle cx="7" cy="10.5" r="0.75" fill="var(--score-low)" />
+                      </svg>
+                    </span>
+                    <h2 style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 22, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: 0 }}>
+                      Your biggest conversion leak
+                    </h2>
+                  </div>
+                  <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.55 }}>
+                    This single image issue is your highest-impact fix. Address it first.
+                  </p>
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
                   <div>
-                    <div style={{ background: 'var(--border)', borderRadius: 8, aspectRatio: '1/1', position: 'relative', overflow: 'hidden', marginBottom: 8, border: '1px solid var(--border)' }}>
+                    <div style={{ background: 'var(--border)', borderRadius: 10, aspectRatio: '1/1', position: 'relative', overflow: 'hidden', marginBottom: 10, border: '1px solid rgba(220,38,38,0.2)' }}>
                       {resultPayload?.product?.images?.[resultPayload.report?.biggestLeak?.imageIndex ?? 0] ? (
                         <img 
                           src={resultPayload.product.images[resultPayload.report?.biggestLeak?.imageIndex ?? 0]} 
@@ -935,32 +1050,74 @@ export default function HomeClient() {
                           <rect width="100%" height="100%" fill="url(#hero-stripe)" />
                         </svg>
                       )}
-                      <div style={{ position: 'absolute', bottom: '10%', left: '10%', right: '10%', background: 'rgba(220,38,38,0.95)', border: '1px solid var(--score-low)', borderRadius: 6, padding: '6px 10px', fontFamily: 'var(--font-dm-sans)', fontSize: 12, fontWeight: 500, color: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                        {resultPayload?.report?.biggestLeak?.description ?? "Hero image text unreadable at 375px"}
+                      {/* Red dashed callout box over problem area */}
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '12%',
+                        left: '8%',
+                        right: '8%',
+                        top: '30%',
+                        border: '2px dashed rgba(220,38,38,0.85)',
+                        borderRadius: 6,
+                        pointerEvents: 'none',
+                      }} />
+                      {/* Callout label pinned to top of the dashed box */}
+                      <div style={{
+                        position: 'absolute',
+                        top: 'calc(30% - 14px)',
+                        left: '8%',
+                        background: 'rgba(220,38,38,0.93)',
+                        borderRadius: '4px 4px 4px 0',
+                        padding: '3px 8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        backdropFilter: 'blur(4px)',
+                      }}>
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                          <path d="M5 1L9 9H1L5 1Z" fill="white" />
+                        </svg>
+                        <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 11, fontWeight: 600, color: '#fff', whiteSpace: 'nowrap' }}>
+                          {resultPayload?.report?.biggestLeak?.description ?? 'Text unreadable at 375px'}
+                        </span>
                       </div>
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font-dm-sans)' }}>Current</div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(220,38,38,0.08)', borderRadius: 6, padding: '3px 10px' }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--score-low)', display: 'inline-block' }} />
+                      <span style={{ fontSize: 12, color: 'var(--score-low)', fontFamily: 'var(--font-dm-sans)', fontWeight: 500 }}>Problem area</span>
+                    </div>
                   </div>
                   <div>
-                    <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 8, padding: 20, marginBottom: 8, minHeight: 180 }}>
-                      <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 10 }}>
-                        What it should show
+                    <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 10, padding: 24, marginBottom: 10 }}>
+                      <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, letterSpacing: '-0.01em' }}>
+                        How to fix it
                       </div>
-                      <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                        {resultPayload?.report?.biggestLeak?.prescription ?? "Lead with the product's primary benefit in 5 words or fewer — large enough to read on a 375px thumbnail without pinching. Remove the secondary callout entirely; it fragments attention. Replace with a single high-contrast badge in the upper-right corner."}
+                      <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0 }}>
+                        {resultPayload?.report?.biggestLeak?.prescription ?? "Lead with the product\u2019s primary benefit in 5 words or fewer \u2014 large enough to read on a 375px thumbnail without pinching. Remove the secondary callout entirely; it fragments attention. Replace with a single high-contrast badge in the upper-right corner."}
                       </p>
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font-dm-sans)' }}>Prescription</div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(22,163,74,0.08)', borderRadius: 6, padding: '3px 10px' }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--score-high)', display: 'inline-block' }} />
+                      <span style={{ fontSize: 12, color: 'var(--score-high)', fontFamily: 'var(--font-dm-sans)', fontWeight: 500 }}>Recommended fix</span>
+                    </div>
                   </div>
                 </div>
               </section>
 
               {/* 4. Competitor comparison */}
-              <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 360ms forwards' }}>
+              <section style={{ background: 'var(--surface)', borderRadius: 16, padding: '32px 32px 36px', marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 360ms forwards' }}>
                 <SectionLabel>Competitor comparison</SectionLabel>
-                <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: 24 }}>
+                <div style={{ marginBottom: 24 }}>
+                  <h2 style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 22, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: '0 0 8px' }}>
+                    How you compare
+                  </h2>
+                  <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.55 }}>
+                    The top-ranked competitor for your keyword, side by side.
+                  </p>
+                </div>
+                <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
-                    {(['Your hero', 'Top competitor'] as const).map((label, i) => {
+                    {(['Your image', 'Top competitor'] as const).map((label, i) => {
                       const imgUrl = i === 0 
                         ? resultPayload?.product?.images?.[0]
                         : resultPayload?.benchmark?.visualStrategies?.[0]?.thumbnailUrl;
@@ -971,9 +1128,12 @@ export default function HomeClient() {
                         ? (resultPayload?.visual?.images?.[0]?.failures?.[0]?.description ?? fallbackText)
                         : (resultPayload?.benchmark?.visualStrategies?.[0]?.strategy ?? fallbackText);
 
+                      const isYours = i === 0;
+
                       return (
                         <div key={i}>
-                          <div style={{ aspectRatio: '1/1', background: 'var(--surface)', borderRadius: 8, marginBottom: 8, border: '1px solid var(--border)', overflow: 'hidden' }}>
+                          {/* Image frame */}
+                          <div style={{ aspectRatio: '1/1', background: 'var(--surface)', borderRadius: 10, marginBottom: 10, border: `1.5px solid ${isYours ? 'rgba(220,38,38,0.25)' : 'rgba(22,163,74,0.25)'}`, overflow: 'hidden', position: 'relative' }}>
                             {imgUrl ? (
                               <img src={i === 0 ? imgUrl : `/api/proxy-image?url=${encodeURIComponent(imgUrl)}`} alt={label} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                             ) : (
@@ -984,11 +1144,27 @@ export default function HomeClient() {
                                   </pattern>
                                 </defs>
                                 <rect width="100%" height="100%" fill={`url(#comp-stripe-${i})`} />
-                                <text x="50%" y="50%" textAnchor="middle" fontSize="11" fill="#a8a7a3" fontFamily="monospace">{label.toLowerCase()}</text>
                               </svg>
                             )}
                           </div>
-                          <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                          {/* Label pill */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              background: isYours ? 'rgba(220,38,38,0.08)' : 'rgba(22,163,74,0.08)',
+                              border: `1px solid ${isYours ? 'rgba(220,38,38,0.2)' : 'rgba(22,163,74,0.2)'}`,
+                              borderRadius: 20,
+                              padding: '3px 10px',
+                            }}>
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: isYours ? 'var(--score-low)' : 'var(--score-high)', display: 'inline-block', flexShrink: 0 }} />
+                              <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, fontWeight: 600, color: isYours ? 'var(--score-low)' : 'var(--score-high)' }}>
+                                {label}
+                              </span>
+                            </span>
+                          </div>
+                          <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55, margin: 0 }}>
                             {descText}
                           </p>
                         </div>
@@ -996,50 +1172,273 @@ export default function HomeClient() {
                     })}
                   </div>
                   <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                    {resultPayload?.benchmark?.gapAnalysis ?? "The top competitor leads with a single product stat at 48px. Your hero uses 4 callouts at 12px. On mobile, none of yours are legible — their single callout is. That gap explains a significant portion of the click-through rate difference."}
+                    {resultPayload?.benchmark?.gapAnalysis ?? "The top competitor leads with a single product stat at 48px. Your hero uses 4 callouts at 12px. On mobile, none of yours are legible \u2014 their single callout is. That gap explains a significant portion of the click-through rate difference."}
                   </div>
                 </div>
               </section>
 
               {/* 5. AI search visibility */}
-              <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 440ms forwards' }}>
+              <section style={{ marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 440ms forwards' }}>
                 <SectionLabel>AI search visibility</SectionLabel>
-                <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-                  {(resultPayload?.search?.queries?.map(q => ({
+
+                {/* Visibility score summary */}
+                {(() => {
+                  const queries = resultPayload?.search?.queries?.map(q => ({
                     query: q.question,
-                    pass: q.claudeFound || q.geminiFound
-                  })) ?? AI_QUERIES).map((q, i, arr) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: q.pass ? 'var(--score-high)' : 'var(--score-low)', flexShrink: 0 }} />
-                      <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, color: 'var(--text-secondary)', flex: 1 }}>{q.query}</span>
-                      <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: q.pass ? 'var(--score-high)' : 'var(--score-low)', fontWeight: 500 }}>
-                        {q.pass ? 'Your product appears' : 'Not found'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, marginTop: 16 }}>
-                  {resultPayload?.search?.missingKeywords?.length 
-                    ? `Your listing doesn't feature ${resultPayload.search.missingKeywords.map(k => `"${k}"`).join(', ')} prominently enough for AI assistants to surface it during high-intent queries. Adding these typically improves AI visibility.`
-                    : "Your listing doesn't feature \"non-slip\", \"ergonomic\", or \"waterproof\" prominently enough for AI assistants to surface it during high-intent queries. Adding these as bullet-point openers typically improves AI visibility within 1–2 weeks."}
-                </p>
+                    pass: q.claudeFound || q.geminiFound,
+                  })) ?? AI_QUERIES;
+                  const passCount = queries.filter(q => q.pass).length;
+                  const total = queries.length;
+                  const pct = Math.round((passCount / total) * 100);
+                  const isWeak = passCount <= total / 2;
+
+                  return (
+                    <>
+                      {/* Summary header */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        background: isWeak ? 'rgba(220,38,38,0.04)' : 'rgba(22,163,74,0.04)',
+                        border: `1px solid ${isWeak ? 'rgba(220,38,38,0.15)' : 'rgba(22,163,74,0.15)'}`,
+                        borderRadius: '12px 12px 0 0',
+                        padding: '18px 24px',
+                        borderBottom: 'none',
+                      }}>
+                        <div>
+                          <div style={{
+                            fontFamily: 'var(--font-dm-sans)',
+                            fontSize: 22,
+                            fontWeight: 700,
+                            letterSpacing: '-0.03em',
+                            color: isWeak ? 'var(--score-low)' : 'var(--score-high)',
+                            lineHeight: 1,
+                            marginBottom: 4,
+                          }}>
+                            {passCount}/{total} <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)', letterSpacing: 0 }}>AI queries found your product</span>
+                          </div>
+                          <div style={{
+                            fontFamily: 'var(--font-dm-sans)',
+                            fontSize: 13,
+                            color: 'var(--text-tertiary)',
+                          }}>
+                            {isWeak
+                              ? `Your product is invisible in ${total - passCount} of ${total} high-intent AI searches`
+                              : `Good visibility — appearing in ${passCount} of ${total} tested queries`}
+                          </div>
+                        </div>
+                        {/* Mini donut-style percentage */}
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{
+                            fontFamily: 'var(--font-jetbrains-mono)',
+                            fontSize: 28,
+                            fontWeight: 700,
+                            letterSpacing: '-0.04em',
+                            color: isWeak ? 'var(--score-low)' : 'var(--score-high)',
+                            lineHeight: 1,
+                          }}>
+                            {pct}%
+                          </div>
+                          <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>
+                            visibility
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Query rows */}
+                      <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 12px 12px', overflow: 'hidden' }}>
+                        {queries.map((q, i) => (
+                          <div key={i} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 14,
+                            padding: '18px 24px',
+                            borderBottom: i < queries.length - 1 ? '1px solid var(--border)' : 'none',
+                            background: !q.pass ? 'rgba(220,38,38,0.015)' : 'transparent',
+                          }}>
+                            {/* Status dot */}
+                            <span style={{
+                              width: 8, height: 8, borderRadius: '50%',
+                              background: q.pass ? 'var(--score-high)' : 'var(--score-low)',
+                              flexShrink: 0,
+                            }} />
+                            {/* Query text */}
+                            <span style={{
+                              fontFamily: 'var(--font-jetbrains-mono)',
+                              fontSize: 13,
+                              color: 'var(--text-primary)',
+                              flex: 1,
+                              lineHeight: 1.45,
+                            }}>
+                              {q.query}
+                            </span>
+                            {/* Badge */}
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              background: q.pass ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)',
+                              border: `1px solid ${q.pass ? 'rgba(22,163,74,0.25)' : 'rgba(220,38,38,0.25)'}`,
+                              borderRadius: 20,
+                              padding: '4px 11px',
+                              fontFamily: 'var(--font-dm-sans)',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: q.pass ? 'var(--score-high)' : 'var(--score-low)',
+                              whiteSpace: 'nowrap',
+                              flexShrink: 0,
+                            }}>
+                              {q.pass ? (
+                                <>
+                                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                                    <path d="M1.5 4.5l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                  Appears
+                                </>
+                              ) : (
+                                <>
+                                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                                    <path d="M2 2l5 5M7 2L2 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                  </svg>
+                                  Not found
+                                </>
+                              )}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Tinted explanation box */}
+                      <div style={{
+                        marginTop: 16,
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        borderLeft: '3px solid var(--text-primary)',
+                        borderRadius: 10,
+                        padding: '16px 20px',
+                      }}>
+                        <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 6 }}>
+                          What this means
+                        </div>
+                        <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0 }}>
+                          {resultPayload?.search?.missingKeywords?.length
+                            ? `Your listing doesn't feature ${resultPayload.search.missingKeywords.map(k => `"${k}"`).join(', ')} prominently enough for AI assistants to surface it during high-intent queries. Adding these typically improves AI visibility.`
+                            : 'Your listing doesn\'t feature "non-slip", "ergonomic", or "waterproof" prominently enough for AI assistants to surface it during high-intent queries. Adding these as bullet-point openers typically improves AI visibility within 1–2 weeks.'}
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()}
               </section>
 
               {/* 6. Score card */}
               <ScoreCard resultPayload={resultPayload} />
 
               {/* 7. Pixii brief */}
-              <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 600ms forwards' }}>
-                <div style={{ marginBottom: 20 }}>
-                  <h2 style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginBottom: 6 }}>
-                    Your Pixii design brief
-                  </h2>
-                  <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)' }}>
-                    Ready to paste into Pixii. Generated from everything the agents found.
-                  </p>
+              <section style={{ marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 600ms forwards' }}>
+                <SectionLabel>Design brief</SectionLabel>
+
+                {/* Header row: title + buttons side by side */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
+                  <div>
+                    <h2 style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 24, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: '0 0 6px' }}>
+                      Your Pixii design brief
+                    </h2>
+                    <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', margin: 0 }}>
+                      Ready to paste into Pixii. Generated from everything the agents found.
+                    </p>
+                  </div>
+
+                  {/* Buttons — prominent at the top */}
+                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                    <a
+                      href="https://pixii.ai"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        height: 44,
+                        padding: '0 20px',
+                        background: '#111110',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontFamily: 'var(--font-dm-sans)',
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: '#fff',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        transition: 'background 150ms ease, transform 150ms ease',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#2a2a28'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#111110'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                    >
+                      Open Pixii
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2.5 9.5L9.5 2.5M9.5 2.5H4.5M9.5 2.5V7.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </a>
+                    <button
+                      onClick={() => {
+                        const fields = resultPayload?.report?.pixiiBrief ? [
+                          { label: 'Product category', value: resultPayload.report.pixiiBrief.productCategory },
+                          { label: 'Target customer', value: resultPayload.report.pixiiBrief.targetCustomer },
+                          { label: 'Visual style direction', value: resultPayload.report.pixiiBrief.visualDirection },
+                          { label: 'Hero shot recommendation', value: resultPayload.report.pixiiBrief.heroRecommendation },
+                          { label: 'Infographic priorities', value: resultPayload.report.pixiiBrief.infographicPriorities.join(', ') },
+                          { label: 'Trust signals to include', value: resultPayload.report.pixiiBrief.trustSignals.join(', ') },
+                          { label: 'Mobile optimisation notes', value: resultPayload.report.pixiiBrief.mobileNotes },
+                          { label: 'AI search keywords to feature', value: resultPayload.report.pixiiBrief.searchKeywords.join(', ') },
+                          { label: "What competitors aren't doing", value: resultPayload.report.pixiiBrief.competitorOpening },
+                        ] : BRIEF_FIELDS;
+                        const text = fields.map(f => `${f.label.toUpperCase()}\n${f.value}`).join('\n\n');
+                        navigator.clipboard.writeText(text).catch(() => {});
+                        setCopyState('copied');
+                        setTimeout(() => setCopyState('idle'), 2000);
+                      }}
+                      style={{
+                        height: 44,
+                        padding: '0 20px',
+                        background: 'transparent',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'var(--font-dm-sans)',
+                        fontSize: 14,
+                        fontWeight: 500,
+                        border: '1px solid var(--border)',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        transition: 'background 150ms ease, transform 150ms ease',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                    >
+                      {copyState === 'copied' ? (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <path d="M2 7l3.5 3.5L12 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                            <rect x="1" y="3" width="8" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+                            <path d="M4 3V2.5A1.5 1.5 0 015.5 1h5A1.5 1.5 0 0112 2.5v7A1.5 1.5 0 0110.5 11H10" stroke="currentColor" strokeWidth="1.3" />
+                          </svg>
+                          Copy brief
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
-                <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 12, padding: '0 32px', marginBottom: 16 }}>
+                {/* Brief card — structured form, not a paragraph */}
+                <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
                   {(resultPayload?.report?.pixiiBrief ? [
                     { label: 'Product category', value: resultPayload.report.pixiiBrief.productCategory },
                     { label: 'Target customer', value: resultPayload.report.pixiiBrief.targetCustomer },
@@ -1051,76 +1450,35 @@ export default function HomeClient() {
                     { label: 'AI search keywords to feature', value: resultPayload.report.pixiiBrief.searchKeywords.join(', ') },
                     { label: "What competitors aren't doing", value: resultPayload.report.pixiiBrief.competitorOpening },
                   ] : BRIEF_FIELDS).map((field, i, arr) => (
-                    <div key={i} style={{ padding: '16px 0', borderBottom: i < arr.length - 1 ? '0.5px solid var(--border)' : 'none' }}>
-                      <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 4 }}>
+                    <div
+                      key={i}
+                      style={{
+                        padding: '20px 28px',
+                        borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+                        background: i % 2 === 0 ? 'var(--white)' : 'rgba(248,247,244,0.5)',
+                      }}
+                    >
+                      <div style={{
+                        fontFamily: 'var(--font-dm-sans)',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        letterSpacing: '0.10em',
+                        textTransform: 'uppercase',
+                        color: 'var(--text-tertiary)',
+                        marginBottom: 6,
+                      }}>
                         {field.label}
                       </div>
-                      <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>
+                      <div style={{
+                        fontFamily: 'var(--font-dm-sans)',
+                        fontSize: 14,
+                        color: 'var(--text-primary)',
+                        lineHeight: 1.65,
+                      }}>
                         {field.value}
                       </div>
                     </div>
                   ))}
-                </div>
-
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button
-                    onClick={() => {
-                      const text = BRIEF_FIELDS.map(f => `${f.label.toUpperCase()}\n${f.value}`).join('\n\n');
-                      navigator.clipboard.writeText(text).catch(() => {});
-                      setCopyState('copied');
-                      setTimeout(() => setCopyState('idle'), 2000);
-                    }}
-                    style={{
-                      height: 44,
-                      padding: '0 24px',
-                      background: 'var(--accent)',
-                      color: '#fff',
-                      fontFamily: 'var(--font-dm-sans)',
-                      fontSize: 14,
-                      fontWeight: 500,
-                      border: 'none',
-                      borderRadius: 8,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      transition: 'transform 150ms ease',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-                  >
-                    {copyState === 'copied' ? (
-                      <>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                          <path d="M2 7l3.5 3.5L12 3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        Copied
-                      </>
-                    ) : 'Copy brief'}
-                  </button>
-                  <a
-                    href="https://pixii.ai"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      height: 44,
-                      padding: '0 24px',
-                      background: 'transparent',
-                      border: '1px solid var(--border)',
-                      borderRadius: 8,
-                      fontFamily: 'var(--font-dm-sans)',
-                      fontSize: 14,
-                      color: 'var(--text-secondary)',
-                      textDecoration: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      transition: 'background 150ms ease',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--surface)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  >
-                    Open Pixii →
-                  </a>
                 </div>
               </section>
 
