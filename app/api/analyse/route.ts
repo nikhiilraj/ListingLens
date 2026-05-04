@@ -11,6 +11,10 @@ import { runCategoryBenchmarker } from '../../../lib/agents/category-benchmarker
 import { runSynthesis } from '../../../lib/agents/synthesis';
 import type { ProductData } from '../../../lib/schemas/product';
 import type { Report } from '../../../lib/schemas/report';
+import type { VisualAudit } from '../../../lib/schemas/visual';
+import type { ReviewIntelligence } from '../../../lib/schemas/review';
+import type { AISearch } from '../../../lib/schemas/search';
+import type { Benchmark } from '../../../lib/schemas/benchmark';
 
 export const runtime = 'edge';
 export const maxDuration = 60;
@@ -24,6 +28,10 @@ interface CachedResult {
   asin: string;
   product: ProductData;
   report: Report | null;
+  visual: VisualAudit | null;
+  review: ReviewIntelligence | null;
+  search: AISearch | null;
+  benchmark: Benchmark | null;
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -38,6 +46,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const asin = extractAsin(body?.url ?? '');
+  console.log("Extracted ASIN:", asin, "from URL:", body?.url);
   if (!asin) {
     return new Response(JSON.stringify({ error: 'Invalid Amazon URL' }), {
       status: 400,
@@ -75,16 +84,18 @@ export async function POST(request: Request): Promise<Response> {
           const cached = await redis.get<CachedResult>(`cache:asin:${asin}`);
           if (cached) {
             send({ type: 'product', data: cached.product });
-            send({ type: 'complete', id: cached.id, cached: true });
+            send({ type: 'complete', id: cached.id, cached: true, payload: cached });
             return;
           }
         }
 
         // In dev mode use fixtures; in real mode fall back to fixtures for known test ASINs
         // when the product API fails (e.g. SearchAPI free tier doesn't support amazon_product).
+        console.log("Fetching product data. isDevMode:", isDevMode());
         const product = isDevMode()
           ? getFixtureProduct(asin) ?? getFixtureProduct('B0CHX1W1XY')
           : await getAmazonProduct(asin) ?? getFixtureProduct(asin);
+        console.log("Product fetch result:", !!product);
         if (!product) {
           send({ type: 'error', message: 'Could not fetch product data for this listing.' });
           return;
@@ -92,6 +103,7 @@ export async function POST(request: Request): Promise<Response> {
 
         send({ type: 'product', data: product });
 
+        console.log("Starting agents in parallel...");
         const [visualResult, reviewResult, searchResult, benchmarkResult] = await Promise.allSettled([
           withTimeout(runVisualAuditor(product, writer), 45000),
           withTimeout(runReviewIntelligence(product, asin, writer), 25000),
@@ -104,10 +116,13 @@ export async function POST(request: Request): Promise<Response> {
         const search = searchResult.status === 'fulfilled' ? searchResult.value : null;
         const benchmark = benchmarkResult.status === 'fulfilled' ? benchmarkResult.value : null;
 
+        console.log("Agents complete. visual:", visualResult.status, "review:", reviewResult.status, "search:", searchResult.status, "benchmark:", benchmarkResult.status);
+        console.log("Running synthesis...");
         const report = await runSynthesis(visual, review, search, benchmark, product, writer);
+        console.log("Synthesis complete. Saving result...");
 
         const id = nanoid();
-        const resultPayload: CachedResult = { id, asin, product, report };
+        const resultPayload: CachedResult = { id, asin, product, report, visual, review, search, benchmark };
 
         if (!isDevMode()) {
           await Promise.all([
@@ -116,8 +131,9 @@ export async function POST(request: Request): Promise<Response> {
           ]);
         }
 
-        send({ type: 'complete', id });
-      } catch {
+        send({ type: 'complete', id, payload: resultPayload });
+      } catch (err) {
+        console.error("Caught error in /api/analyse route:", err);
         send({ type: 'error', message: 'Something went wrong. Please try again.' });
       } finally {
         controller.close();

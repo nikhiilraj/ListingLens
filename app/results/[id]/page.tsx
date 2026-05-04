@@ -1,7 +1,26 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
+import { redis } from '@/lib/redis';
+import type { ProductData } from '@/lib/schemas/product';
+import type { Report } from '@/lib/schemas/report';
+import type { VisualAudit } from '@/lib/schemas/visual';
+import type { ReviewIntelligence } from '@/lib/schemas/review';
+import type { AISearch } from '@/lib/schemas/search';
+import type { Benchmark } from '@/lib/schemas/benchmark';
+
+interface CachedResult {
+  id: string;
+  asin: string;
+  product: ProductData;
+  report: Report | null;
+  visual: VisualAudit | null;
+  review: ReviewIntelligence | null;
+  search: AISearch | null;
+  benchmark: Benchmark | null;
+}
 
 export const metadata: Metadata = {
   title: 'Listing Report — ListingLens',
@@ -52,9 +71,23 @@ const BRIEF_FIELDS = [
   { label: 'Mobile optimisation notes', value: 'Max 6 words per callout. Min 16px text on all images. Test every frame at 375px before upload.' },
 ];
 
-export default function ResultsPage() {
-  const total = AGENT_SCORES.reduce((a, b) => a + b, 0);
-  const widths = AGENT_SCORES.map(s => (s / total) * 100);
+export default async function ResultsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  
+  const resultPayload = await redis.get<CachedResult>(`result:${id}`);
+  
+  if (!resultPayload) {
+    notFound();
+  }
+
+  const SCORE = resultPayload?.report?.overallScore ?? DEMO_SCORE;
+  const AGENT_SCORES = [
+    resultPayload?.visual?.overallScore ?? 58,
+    resultPayload?.review?.available ? 71 : 0,
+    resultPayload?.search?.visibilityScore ?? 44,
+    resultPayload?.benchmark?.competitorCount ? 79 : 0
+  ];
+  const widths = AGENT_SCORES.map(s => (s / AGENT_SCORES.reduce((a, b) => a + b, 0)) * 100);
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -77,8 +110,8 @@ export default function ResultsPage() {
           animation: 'fadeSlideUp 400ms ease forwards',
         }}>
           <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Sarah K.</strong>{' '}
-            shared this listing report · <span>May 3, 2026</span>
+            <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Guest User</strong>{' '}
+            shared this listing report
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="strip-btn">
@@ -103,22 +136,28 @@ export default function ResultsPage() {
           animation: 'fadeSlideUp 400ms ease forwards',
         }}>
           <div style={{ width: 72, height: 72, borderRadius: 10, background: 'var(--border)', flexShrink: 0, border: '1px solid var(--border)', overflow: 'hidden' }}>
-            <svg width="72" height="72" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="t-s" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                  <line x1="0" y1="0" x2="0" y2="8" stroke="#e8e6e2" strokeWidth="4" />
-                </pattern>
-              </defs>
-              <rect width="72" height="72" fill="url(#t-s)" />
-            </svg>
+            {resultPayload?.product?.images?.[0] ? (
+              <img src={resultPayload.product.images[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <svg width="72" height="72" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="t-s" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                    <line x1="0" y1="0" x2="0" y2="8" stroke="#e8e6e2" strokeWidth="4" />
+                  </pattern>
+                </defs>
+                <rect width="72" height="72" fill="url(#t-s)" />
+              </svg>
+            )}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, color: 'var(--text-tertiary)' }}>rpt_abc123xyz</span>
+              <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, color: 'var(--text-tertiary)' }}>rpt_{id.slice(0, 8)}</span>
               <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--score-high)', background: 'rgba(22,163,74,0.08)', borderRadius: 4, padding: '2px 7px' }}>Complete</span>
             </div>
-            <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginBottom: 4 }}>Premium Ergonomic Desk Mat</div>
-            <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, color: 'var(--text-tertiary)' }}>ASIN B08N5WRWNW · amazon.com</div>
+            <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginBottom: 4 }}>
+              {resultPayload?.product?.title ? (resultPayload.product.title.slice(0, 80) + (resultPayload.product.title.length > 80 ? '...' : '')) : 'Premium Ergonomic Desk Mat'}
+            </div>
+            <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, color: 'var(--text-tertiary)' }}>ASIN {resultPayload?.asin ?? 'B08N5WRWNW'} · amazon.com</div>
           </div>
         </div>
 
@@ -129,7 +168,7 @@ export default function ResultsPage() {
             <span style={{ fontSize: 36, fontWeight: 500, color: scoreColor(SCORE) }}> {scoreGrade(SCORE)}</span>
           </div>
           <p style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 8, marginBottom: 24 }}>
-            Strong hero image. Infographics are costing you conversions on mobile.
+            {resultPayload?.report?.verdict ?? "Strong hero image. Infographics are costing you conversions on mobile."}
           </p>
           <div style={{ maxWidth: 480, margin: '0 auto' }}>
             <div style={{ display: 'flex', gap: 2, borderRadius: 4, overflow: 'hidden', height: 8, marginBottom: 10 }}>
@@ -163,8 +202,12 @@ export default function ResultsPage() {
             Key findings
           </div>
           <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '0 24px' }}>
-            {FINDINGS.map((f, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '16px 0', borderBottom: i < FINDINGS.length - 1 ? '0.5px solid var(--border)' : 'none' }}>
+            {(resultPayload?.visual?.topFailures.map((f: any) => ({
+              color: f.title.toLowerCase().includes('critical') ? 'var(--score-low)' : 'var(--score-mid)',
+              title: f.title,
+              detail: f.description,
+            })) ?? FINDINGS).map((f: any, i: number, arr: any[]) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '16px 0', borderBottom: i < arr.length - 1 ? '0.5px solid var(--border)' : 'none' }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: f.color, flexShrink: 0, marginTop: 6 }} />
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 2 }}>{f.title}</div>
@@ -181,8 +224,11 @@ export default function ResultsPage() {
             AI search visibility
           </div>
           <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-            {AI_QUERIES.map((q, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', borderBottom: i < AI_QUERIES.length - 1 ? '0.5px solid var(--border)' : 'none' }}>
+            {(resultPayload?.search?.queries?.map(q => ({
+              query: q.question,
+              pass: q.claudeFound || q.geminiFound
+            })) ?? AI_QUERIES).map((q, i, arr) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', borderBottom: i < arr.length - 1 ? '0.5px solid var(--border)' : 'none' }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: q.pass ? 'var(--score-high)' : 'var(--score-low)', flexShrink: 0 }} />
                 <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: '12.5px', color: 'var(--text-secondary)', flex: 1 }}>{q.query}</span>
                 <span style={{ fontSize: 12, fontWeight: 500, color: q.pass ? 'var(--score-high)' : 'var(--score-low)', whiteSpace: 'nowrap' }}>
@@ -199,7 +245,15 @@ export default function ResultsPage() {
             Design brief — preview
           </div>
           <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '0 24px' }}>
-            {BRIEF_FIELDS.map((field, i) => (
+            {(resultPayload?.report?.pixiiBrief ? [
+              { label: 'Product category', value: resultPayload.report.pixiiBrief.productCategory },
+              { label: 'Target customer', value: resultPayload.report.pixiiBrief.targetCustomer },
+              { label: 'Visual style direction', value: resultPayload.report.pixiiBrief.visualDirection },
+              { label: 'Hero shot recommendation', value: resultPayload.report.pixiiBrief.heroRecommendation },
+              { label: 'Infographic priorities', value: resultPayload.report.pixiiBrief.infographicPriorities.join(', ') },
+              { label: 'Trust signals to include', value: resultPayload.report.pixiiBrief.trustSignals.join(', ') },
+              { label: 'Mobile optimisation notes', value: resultPayload.report.pixiiBrief.mobileNotes },
+            ] : BRIEF_FIELDS).slice(0, 3).map((field, i) => (
               <div key={i} style={{ padding: '14px 0', borderBottom: '0.5px solid var(--border)' }}>
                 <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 4 }}>{field.label}</div>
                 <div style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.65 }}>{field.value}</div>
@@ -240,7 +294,7 @@ export default function ResultsPage() {
 
       <Footer
         left="ListingLens · listinglens.com"
-        right={<span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--text-tertiary)' }}>Shared by Sarah K. · May 3, 2026</span>}
+        right={<span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--text-tertiary)' }}>Shared Report</span>}
       />
     </div>
   );

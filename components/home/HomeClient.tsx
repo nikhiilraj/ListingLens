@@ -4,6 +4,24 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 
+import type { ProductData } from '@/lib/schemas/product';
+import type { Report } from '@/lib/schemas/report';
+import type { VisualAudit } from '@/lib/schemas/visual';
+import type { ReviewIntelligence } from '@/lib/schemas/review';
+import type { AISearch } from '@/lib/schemas/search';
+import type { Benchmark } from '@/lib/schemas/benchmark';
+
+interface CachedResult {
+  id: string;
+  asin: string;
+  product: ProductData;
+  report: Report | null;
+  visual: VisualAudit | null;
+  review: ReviewIntelligence | null;
+  search: AISearch | null;
+  benchmark: Benchmark | null;
+}
+
 // ── Types ─────────────────────────────────────────────────────────
 type AgentState = 'waiting' | 'running' | 'complete';
 type Phase = 'idle' | 'running' | 'complete';
@@ -22,6 +40,7 @@ interface ImageItem {
   label: string;
   score: number;
   failures: { label: string; detail: string }[];
+  url?: string;
 }
 
 interface AiQuery {
@@ -376,15 +395,19 @@ function ImageCard({ img }: { img: ImageItem }) {
         width: 80, height: 80, borderRadius: 8, background: 'var(--surface)',
         flexShrink: 0, border: '1px solid var(--border)', overflow: 'hidden',
       }}>
-        <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id={`stripe-${img.id}`} width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-              <line x1="0" y1="0" x2="0" y2="8" stroke="#e8e6e2" strokeWidth="4" />
-            </pattern>
-          </defs>
-          <rect width="80" height="80" fill={`url(#stripe-${img.id})`} />
-          <text x="40" y="44" textAnchor="middle" fontSize="9" fill="#a8a7a3" fontFamily="monospace">img {img.id}</text>
-        </svg>
+        {img.url ? (
+          <img src={img.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={img.label} />
+        ) : (
+          <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id={`stripe-${img.id}`} width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="8" stroke="#e8e6e2" strokeWidth="4" />
+              </pattern>
+            </defs>
+            <rect width="80" height="80" fill={`url(#stripe-${img.id})`} />
+            <text x="40" y="44" textAnchor="middle" fontSize="9" fill="#a8a7a3" fontFamily="monospace">img {img.id}</text>
+          </svg>
+        )}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -433,8 +456,9 @@ export default function HomeClient() {
   const [apiError, setApiError] = useState('');
   const [agentElapsed, setAgentElapsed] = useState([0, 0, 0, 0]);
   const agentStartTimes = useRef<Array<number | null>>([null, null, null, null]);
+  const [resultPayload, setResultPayload] = useState<CachedResult | null>(null);
 
-  const animatedScore = useAnimatedCount(DEMO_SCORE, 800, scoreAnimate);
+  const animatedScore = useAnimatedCount(resultPayload?.report?.overallScore ?? DEMO_SCORE, 800, scoreAnimate);
 
   const STATUS_MESSAGES = [
     'Analysing hero image quality…',
@@ -538,6 +562,7 @@ export default function HomeClient() {
     setDashVisible(false);
     setAgentSummaries(['', '', '', '']);
     setAgentElapsed([0, 0, 0, 0]);
+    setResultPayload(null);
     typingRefs.current = [null, null, null, null];
     agentStartTimes.current = [null, null, null, null];
     statusRef.current = 0;
@@ -567,6 +592,7 @@ export default function HomeClient() {
       const reader = res.body!.getReader();
       const dec = new TextDecoder();
       let buf = '';
+      let isSynthDone = false;
 
       outer: while (true) {
         const { done, value } = await reader.read();
@@ -587,7 +613,16 @@ export default function HomeClient() {
           }
 
           if (ev.type === 'complete') {
+            if (ev.payload) {
+              setResultPayload(ev.payload as CachedResult);
+            }
             setPhase('complete');
+            if (!isSynthDone) {
+              setAgentStates(['complete', 'complete', 'complete', 'complete']);
+              setAgentSummaries(AGENTS.map(a => a.summary));
+              setSynthState('done');
+              setTimeout(() => { setReportVisible(true); setTimeout(() => setScoreAnimate(true), 300); }, 600);
+            }
             break outer;
           }
 
@@ -595,6 +630,7 @@ export default function HomeClient() {
             if (ev.status === 'running') setSynthState('synth');
             if (ev.status === 'complete') {
               setSynthState('done');
+              isSynthDone = true;
               setTimeout(() => { setReportVisible(true); setTimeout(() => setScoreAnimate(true), 300); }, 600);
             }
             continue;
@@ -826,8 +862,8 @@ export default function HomeClient() {
                   }}>
                     {animatedScore}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 32, fontWeight: 500, color: scoreColor(DEMO_SCORE) }}>
-                    {scoreGrade(DEMO_SCORE)}
+                  <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 32, fontWeight: 500, color: scoreColor(resultPayload?.report?.overallScore ?? DEMO_SCORE) }}>
+                    {scoreGrade(resultPayload?.report?.overallScore ?? DEMO_SCORE)}
                   </span>
                 </div>
                 <p style={{
@@ -837,7 +873,7 @@ export default function HomeClient() {
                   maxWidth: 480,
                   margin: '0 auto 28px',
                 }}>
-                  Strong hero image. Infographics are costing you conversions on mobile.
+                  {resultPayload?.report?.verdict ?? "Strong hero image. Infographics are costing you conversions on mobile."}
                 </p>
                 <ScoreBar
                   scores={AGENTS.map(a => a.score)}
@@ -849,7 +885,13 @@ export default function HomeClient() {
               <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 200ms forwards' }}>
                 <SectionLabel>Image analysis</SectionLabel>
                 <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '0 24px' }}>
-                  {IMAGES.map(img => <ImageCard key={img.id} img={img} />)}
+                  {(resultPayload?.visual?.images?.map(img => ({
+                    id: img.index,
+                    label: `Image ${img.index}`,
+                    score: img.score,
+                    failures: img.failures.map(f => ({ label: f.lever, detail: f.description })),
+                    url: resultPayload.product?.images?.[img.index]
+                  })) ?? IMAGES).map(img => <ImageCard key={img.id} img={img} />)}
                 </div>
               </section>
 
@@ -882,8 +924,7 @@ export default function HomeClient() {
                         What it should show
                       </div>
                       <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                        Lead with the product's primary benefit in 5 words or fewer — large enough to read on a 375px thumbnail without pinching.
-                        Remove the secondary callout entirely; it fragments attention. Replace with a single high-contrast badge in the upper-right corner.
+                        {resultPayload?.report?.biggestLeak?.prescription ?? "Lead with the product's primary benefit in 5 words or fewer — large enough to read on a 375px thumbnail without pinching. Remove the secondary callout entirely; it fragments attention. Replace with a single high-contrast badge in the upper-right corner."}
                       </p>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font-dm-sans)' }}>Prescription</div>
@@ -916,7 +957,7 @@ export default function HomeClient() {
                     ))}
                   </div>
                   <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                    The top competitor leads with a single product stat at 48px. Your hero uses 4 callouts at 12px. On mobile, none of yours are legible — their single callout is. That gap explains a significant portion of the click-through rate difference.
+                    {resultPayload?.benchmark?.gapAnalysis ?? "The top competitor leads with a single product stat at 48px. Your hero uses 4 callouts at 12px. On mobile, none of yours are legible — their single callout is. That gap explains a significant portion of the click-through rate difference."}
                   </div>
                 </div>
               </section>
@@ -925,8 +966,11 @@ export default function HomeClient() {
               <section style={{ marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 440ms forwards' }}>
                 <SectionLabel>AI search visibility</SectionLabel>
                 <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-                  {AI_QUERIES.map((q, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderBottom: i < AI_QUERIES.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                  {(resultPayload?.search?.queries?.map(q => ({
+                    query: q.question,
+                    pass: q.claudeFound || q.geminiFound
+                  })) ?? AI_QUERIES).map((q, i, arr) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
                       <span style={{ width: 8, height: 8, borderRadius: '50%', background: q.pass ? 'var(--score-high)' : 'var(--score-low)', flexShrink: 0 }} />
                       <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, color: 'var(--text-secondary)', flex: 1 }}>{q.query}</span>
                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: q.pass ? 'var(--score-high)' : 'var(--score-low)', fontWeight: 500 }}>
@@ -936,7 +980,9 @@ export default function HomeClient() {
                   ))}
                 </div>
                 <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, marginTop: 16 }}>
-                  Your listing doesn't feature "non-slip", "ergonomic", or "waterproof" prominently enough for AI assistants to surface it during high-intent queries. Adding these as bullet-point openers typically improves AI visibility within 1–2 weeks.
+                  {resultPayload?.search?.missingKeywords?.length 
+                    ? `Your listing doesn't feature ${resultPayload.search.missingKeywords.map(k => `"${k}"`).join(', ')} prominently enough for AI assistants to surface it during high-intent queries. Adding these typically improves AI visibility.`
+                    : "Your listing doesn't feature \"non-slip\", \"ergonomic\", or \"waterproof\" prominently enough for AI assistants to surface it during high-intent queries. Adding these as bullet-point openers typically improves AI visibility within 1–2 weeks."}
                 </p>
               </section>
 
@@ -949,23 +995,29 @@ export default function HomeClient() {
                       <div style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--text-tertiary)' }} />
                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, color: 'var(--text-tertiary)' }}>ListingLens</span>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 500, color: scoreColor(DEMO_SCORE), background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 10px' }}>
-                      {DEMO_SCORE} · {scoreGrade(DEMO_SCORE)}
+                    <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 500, color: scoreColor(resultPayload?.report?.overallScore ?? DEMO_SCORE), background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 10px' }}>
+                      {resultPayload?.report?.overallScore ?? DEMO_SCORE} · {scoreGrade(resultPayload?.report?.overallScore ?? DEMO_SCORE)}
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
                     <div style={{ width: 64, height: 64, borderRadius: 8, background: 'var(--border)', flexShrink: 0, overflow: 'hidden' }}>
-                      <svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                          <pattern id="thumb-stripe" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                            <line x1="0" y1="0" x2="0" y2="8" stroke="#e8e6e2" strokeWidth="4" />
-                          </pattern>
-                        </defs>
-                        <rect width="64" height="64" fill="url(#thumb-stripe)" />
-                      </svg>
+                      {resultPayload?.product?.images?.[0] ? (
+                        <img src={resultPayload.product.images[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <pattern id="thumb-stripe" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                              <line x1="0" y1="0" x2="0" y2="8" stroke="#e8e6e2" strokeWidth="4" />
+                            </pattern>
+                          </defs>
+                          <rect width="64" height="64" fill="url(#thumb-stripe)" />
+                        </svg>
+                      )}
                     </div>
                     <div>
-                      <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>Premium Desk Mat</div>
+                      <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>
+                        {resultPayload?.product?.title ? (resultPayload.product.title.slice(0, 40) + '...') : 'Premium Desk Mat'}
+                      </div>
                       <div style={{ display: 'flex', gap: 4 }}>
                         {['Images: ✗', 'Reviews: ✓', 'AI: ✗'].map((t, i) => (
                           <span key={i} style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, color: 'var(--text-tertiary)', background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 6px' }}>{t}</span>
@@ -1008,8 +1060,18 @@ export default function HomeClient() {
                 </div>
 
                 <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 12, padding: '0 32px', marginBottom: 16 }}>
-                  {BRIEF_FIELDS.map((field, i) => (
-                    <div key={i} style={{ padding: '16px 0', borderBottom: i < BRIEF_FIELDS.length - 1 ? '0.5px solid var(--border)' : 'none' }}>
+                  {(resultPayload?.report?.pixiiBrief ? [
+                    { label: 'Product category', value: resultPayload.report.pixiiBrief.productCategory },
+                    { label: 'Target customer', value: resultPayload.report.pixiiBrief.targetCustomer },
+                    { label: 'Visual style direction', value: resultPayload.report.pixiiBrief.visualDirection },
+                    { label: 'Hero shot recommendation', value: resultPayload.report.pixiiBrief.heroRecommendation },
+                    { label: 'Infographic priorities', value: resultPayload.report.pixiiBrief.infographicPriorities.join(', ') },
+                    { label: 'Trust signals to include', value: resultPayload.report.pixiiBrief.trustSignals.join(', ') },
+                    { label: 'Mobile optimisation notes', value: resultPayload.report.pixiiBrief.mobileNotes },
+                    { label: 'AI search keywords to feature', value: resultPayload.report.pixiiBrief.searchKeywords.join(', ') },
+                    { label: "What competitors aren't doing", value: resultPayload.report.pixiiBrief.competitorOpening },
+                  ] : BRIEF_FIELDS).map((field, i, arr) => (
+                    <div key={i} style={{ padding: '16px 0', borderBottom: i < arr.length - 1 ? '0.5px solid var(--border)' : 'none' }}>
                       <div style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 4 }}>
                         {field.label}
                       </div>
