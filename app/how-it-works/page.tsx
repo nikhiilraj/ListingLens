@@ -68,7 +68,7 @@ export default function HowItWorksPage() {
               {[
                 { title: 'POST /api/analyse', sub: '{ asin, url }', accent: true },
                 null,
-                { title: 'Image proxy', sub: 'fetch + cache Amazon CDN' },
+                { title: 'Upstash Redis', sub: 'rate limiting + caching' },
                 null,
                 { title: 'SerpAPI product', sub: 'title, images, bullets' },
                 null,
@@ -166,7 +166,7 @@ export default function HowItWorksPage() {
               },
               {
                 index: '02', title: 'Review intelligence',
-                tags: ['Firecrawl', 'SerpAPI reviews', 'NLP'],
+                tags: ['Firecrawl', 'Claude Sonnet', 'NLP'],
                 body: [
                   'Reviews are scraped via Firecrawl with an extraction schema (paginated, up to 50 reviews). Claude runs extraction in a single batch: identify purchase triggers, extract recurring complaints, and surface keywords that appear in reviews but not in listing images.',
                   'This gap list feeds directly into the brief generator — the most actionable output of the tool.',
@@ -307,6 +307,7 @@ export default function HowItWorksPage() {
                 ['Persistence', 'Upstash KV', 'Postgres', 'Serverless-native; no connection pooling overhead; free tier covers MVP volume'],
                 ['Agent fan-out', 'Promise.allSettled', 'Promise.all', 'Sequential is 4× slower; Promise.all fails-fast on any error'],
                 ['Image proxy', 'Edge Function', 'Direct CDN URLs', 'Amazon CDN URLs require browser cookies; proxying server-side bypasses CORS'],
+                ['Score card export', 'html-to-image', '@vercel/og (Satori)', 'Client-side canvas rendering handles complex CSS seamlessly and avoids strict Satori layout limitations'],
               ].map(([decision, chose, rejected, reason], i) => (
                 <tr key={i}>
                   <td style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', padding: '12px 24px 12px 0', borderBottom: '0.5px solid var(--border)', verticalAlign: 'top', whiteSpace: 'nowrap' }}>{decision}</td>
