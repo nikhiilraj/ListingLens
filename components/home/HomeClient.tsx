@@ -837,22 +837,22 @@ export default function HomeClient() {
                   onClick={handleSubmit}
                   style={{
                     height: 56,
-                    padding: '0 24px',
-                    background: '#1a1a1a',
+                    padding: '0 28px',
+                    background: '#111110',
                     color: '#fff',
                     fontFamily: 'var(--font-dm-sans)',
                     fontSize: 14,
                     fontWeight: 500,
                     border: 'none',
-                    borderRadius: 10,
+                    borderRadius: 12,
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
                     transition: 'background 150ms, transform 150ms',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-hover)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                  onMouseDown={e => { e.currentTarget.style.transform = 'translateY(0) scale(0.98)'; }}
-                  onMouseUp={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#2d2d2d'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#111110'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  onMouseDown={e => { e.currentTarget.style.background = '#111110'; e.currentTarget.style.transform = 'translateY(0) scale(0.98)'; }}
+                  onMouseUp={e => { e.currentTarget.style.background = '#2d2d2d'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                 >
                   Analyse listing
                 </button>
