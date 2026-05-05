@@ -769,9 +769,9 @@ export default function HomeClient() {
               transform: 'translateX(-50%)',
               width: '100vw',
               backgroundImage: [
-                'repeating-linear-gradient(0deg, rgba(0,0,0,0.045) 0px, rgba(0,0,0,0.045) 1px, transparent 1px, transparent 40px)',
-                'repeating-linear-gradient(60deg, rgba(0,0,0,0.045) 0px, rgba(0,0,0,0.045) 1px, transparent 1px, transparent 40px)',
-                'repeating-linear-gradient(120deg, rgba(0,0,0,0.045) 0px, rgba(0,0,0,0.045) 1px, transparent 1px, transparent 40px)',
+                'repeating-linear-gradient(0deg, rgba(0,0,0,0.0315) 0px, rgba(0,0,0,0.0315) 1px, transparent 1px, transparent 40px)',
+                'repeating-linear-gradient(60deg, rgba(0,0,0,0.0315) 0px, rgba(0,0,0,0.0315) 1px, transparent 1px, transparent 40px)',
+                'repeating-linear-gradient(120deg, rgba(0,0,0,0.0315) 0px, rgba(0,0,0,0.0315) 1px, transparent 1px, transparent 40px)',
               ].join(', '),
               WebkitMaskImage: [
                 'linear-gradient(to bottom, black 55%, rgba(0,0,0,0.3) 80%, transparent 100%)',
