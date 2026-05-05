@@ -40,13 +40,13 @@ export async function scrapeReviews(asin: string): Promise<ReviewData[] | null> 
           },
         },
       }),
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(20000),
     });
 
     if (!res.ok) return null;
 
     const data = await res.json();
-    const reviews: ReviewData[] = data.extract?.reviews ?? [];
+    const reviews: ReviewData[] = data.data?.extract?.reviews ?? [];
 
     return reviews.length > 0 ? reviews : null;
   } catch {
