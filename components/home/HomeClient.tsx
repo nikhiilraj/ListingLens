@@ -274,7 +274,7 @@ function AgentCard({
       borderRadius: 12,
       padding: '24px 28px',
       transition: 'border-color 250ms ease, background 250ms ease, box-shadow 250ms ease',
-      boxShadow: isRunning ? '0 2px 12px rgba(0,0,0,0.06)' : 'none',
+      boxShadow: isRunning ? '0 2px 12px rgba(0,0,0,0.045)' : 'none',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(12px)',
       transitionProperty: 'opacity, transform, border-color, background, box-shadow',
@@ -520,7 +520,7 @@ function ImageCard({ img }: { img: ImageItem }) {
 
 // ── Main component ────────────────────────────────────────────────
 export default function HomeClient() {
-  const [url, setUrl] = useState('https://www.amazon.com/dp/B08N5WRWNW');
+  const [url, setUrl] = useState('https://www.amazon.com/dp/B0FJN3BTPV');
   const [urlError, setUrlError] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [agentStates, setAgentStates] = useState<AgentState[]>(['waiting', 'waiting', 'waiting', 'waiting']);
@@ -760,7 +760,32 @@ export default function HomeClient() {
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
 
           {/* ── Hero ── */}
-          <section style={{ textAlign: 'center', padding: '80px 0 64px' }}>
+          <section style={{ textAlign: 'center', padding: '80px 0 64px', position: 'relative' }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '100vw',
+              backgroundImage: [
+                'repeating-linear-gradient(0deg, rgba(0,0,0,0.045) 0px, rgba(0,0,0,0.045) 1px, transparent 1px, transparent 40px)',
+                'repeating-linear-gradient(60deg, rgba(0,0,0,0.045) 0px, rgba(0,0,0,0.045) 1px, transparent 1px, transparent 40px)',
+                'repeating-linear-gradient(120deg, rgba(0,0,0,0.045) 0px, rgba(0,0,0,0.045) 1px, transparent 1px, transparent 40px)',
+              ].join(', '),
+              WebkitMaskImage: [
+                'linear-gradient(to bottom, black 55%, rgba(0,0,0,0.3) 80%, transparent 100%)',
+                'radial-gradient(ellipse 55% 60% at 50% 42%, transparent 0%, transparent 38%, black 68%)',
+              ].join(', '),
+              WebkitMaskComposite: 'destination-in',
+              maskImage: [
+                'linear-gradient(to bottom, black 55%, rgba(0,0,0,0.3) 80%, transparent 100%)',
+                'radial-gradient(ellipse 55% 60% at 50% 42%, transparent 0%, transparent 38%, black 68%)',
+              ].join(', '),
+              maskComposite: 'intersect',
+              pointerEvents: 'none',
+              zIndex: -1,
+            }} />
             <div style={{ ...heroStyle(0), marginBottom: 16 }}>
               <span style={{
                 fontFamily: 'var(--font-dm-sans)',

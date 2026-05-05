@@ -32,7 +32,9 @@ export async function runVisualAuditor(
       return fixture;
     }
 
-    const imageUrls = product.images.slice(0, 7).map(u => u.replace(/_AC_SL\d+_/, '_AC_SL500_'));
+    // Use 300px images (down from 500px) — reduces base64 payload by ~64%,
+    // keeping Claude Vision fast enough to complete within the 55s window.
+    const imageUrls = product.images.slice(0, 6).map(u => u.replace(/_AC_SL\d+_/, '_AC_SL300_'));
     const imageResults = await Promise.allSettled(imageUrls.map(url => fetchImageAsBase64(url)));
 
     const validImages: { index: number; base64: string; mimeType: string }[] = [];

@@ -17,7 +17,7 @@ import type { AISearch } from '../../../lib/schemas/search';
 import type { Benchmark } from '../../../lib/schemas/benchmark';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 90;
 
 function withTimeout<T>(p: Promise<T | null>, ms: number): Promise<T | null> {
   return Promise.race([p, new Promise<null>(resolve => setTimeout(() => resolve(null), ms))]);
@@ -105,7 +105,7 @@ export async function POST(request: Request): Promise<Response> {
 
         console.log("Starting agents in parallel...");
         const [visualResult, reviewResult, searchResult, benchmarkResult] = await Promise.allSettled([
-          withTimeout(runVisualAuditor(product, writer), 45000),
+          withTimeout(runVisualAuditor(product, writer), 55000),
           withTimeout(runReviewIntelligence(product, asin, writer), 25000),
           withTimeout(runAISearchAuditor(product, writer), 35000),
           withTimeout(runCategoryBenchmarker(product, writer), 45000),
