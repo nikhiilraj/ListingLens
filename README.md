@@ -2,6 +2,8 @@
 
 **Amazon listing image auditor powered by 4 parallel AI agents.**
 
+![ListingLens](./banner.svg)
+
 Paste an Amazon listing URL. In 90 seconds, four AI agents analyse your images, benchmark your competitors, check your AI search visibility, and generate a structured design brief — ready to hand to a designer or paste directly into Pixii.
 
 **[Live Demo](https://listinglens-seven.vercel.app/)** · Built in 2 days as a project submission for [Pixii.ai](https://pixii.ai)
@@ -170,6 +172,6 @@ app/
 
 ## About
 
-Built by **[NIKHIL RAJ]** — [LinkedIn](https://linkedin.com/in/nikhilraj-dev) · [GitHub](https://github.com/nikhiilraj)
+Built by **NIKHIL RAJ** — [LinkedIn](https://linkedin.com/in/nikhilraj-dev) · [GitHub](https://github.com/nikhiilraj)
 
 Built as a submission project for [Pixii.ai](https://pixii.ai) — a platform that designs Amazon listings instantly using AI. ListingLens is a companion diagnostic tool that identifies what needs to be fixed before Pixii designs it.
