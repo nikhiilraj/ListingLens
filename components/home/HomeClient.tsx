@@ -1399,35 +1399,6 @@ export default function HomeClient() {
 
                   {/* Buttons — prominent at the top */}
                   <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                    <a
-                      href="https://pixii.ai"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        height: 44,
-                        padding: '0 20px',
-                        background: '#111110',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontFamily: 'var(--font-dm-sans)',
-                        fontSize: 14,
-                        fontWeight: 500,
-                        color: '#fff',
-                        textDecoration: 'none',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        transition: 'background 150ms ease, transform 150ms ease',
-                        cursor: 'pointer',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.background = '#2a2a28'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = '#111110'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                    >
-                      Open Pixii
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M2.5 9.5L9.5 2.5M9.5 2.5H4.5M9.5 2.5V7.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </a>
                     <button
                       onClick={() => {
                         const fields = resultPayload?.report?.pixiiBrief ? [
