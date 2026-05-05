@@ -151,7 +151,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Nav variant="results" />
 
-      <main style={{ maxWidth: 760, margin: '0 auto', padding: '56px 24px 120px' }}>
+      <main className="page-main" style={{ maxWidth: 760, margin: '0 auto', padding: '56px 24px 120px' }}>
 
         {/* Share strip */}
         <div style={{
@@ -222,8 +222,8 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
         {/* Score */}
         <div style={{ textAlign: 'center', padding: '40px 0 32px', opacity: 0, animation: 'fadeSlideUp 400ms 60ms ease forwards' }}>
           <div>
-            <span style={{ fontSize: 80, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, color: scoreColor(SCORE) }}>{SCORE}</span>
-            <span style={{ fontSize: 36, fontWeight: 500, color: scoreColor(SCORE) }}> {scoreGrade(SCORE)}</span>
+            <span className="score-number-big" style={{ fontSize: 80, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, color: scoreColor(SCORE) }}>{SCORE}</span>
+            <span className="score-grade-big" style={{ fontSize: 36, fontWeight: 500, color: scoreColor(SCORE) }}> {scoreGrade(SCORE)}</span>
           </div>
           <p style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 8, marginBottom: 24 }}>
             {resultPayload?.report?.verdict ?? "Strong hero image. Infographics are costing you conversions on mobile."}
@@ -243,7 +243,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Agent score cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 400ms 120ms ease forwards' }}>
+        <div className="results-agent-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 48, opacity: 0, animation: 'fadeSlideUp 400ms 120ms ease forwards' }}>
           {AGENT_NAMES.map((name, i) => (
             <div key={i} style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 10, padding: 16 }}>
               <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 6, fontWeight: 500 }}>{name}</div>
@@ -350,7 +350,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
             Competitor comparison
           </div>
           <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 12, padding: 24 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+            <div className="competitor-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
               {(['Your hero', 'Top competitor'] as const).map((label, i) => {
                 const imgUrl = i === 0 
                   ? resultPayload?.product?.images?.[0]

@@ -268,3 +268,77 @@ body {
 .url-input::placeholder {
   color: var(--text-secondary);
 }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Page main: reduce top padding */
+  .page-main { padding-top: 48px !important; }
+
+  /* Changelog timeline: collapse to single column */
+  .timeline-row { grid-template-columns: 1fr !important; }
+  .timeline-left-col { padding: 20px 0 4px !important; }
+  .timeline-line-el { display: none !important; }
+  .timeline-dot-el { display: none !important; }
+  .timeline-right-col { padding: 0 0 28px !important; border-left: none !important; }
+
+  /* How it works: 4-col agent grid → 2-col */
+  .how-agent-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Built with stack table: collapse to single column */
+  .stack-table-row { grid-template-columns: 1fr !important; }
+  .stack-table-row.header { display: none !important; }
+  .stack-col { padding: 4px 0 !important; }
+  .stack-col:first-child { padding-top: 14px !important; }
+  .stack-col:last-child { padding-bottom: 14px !important; }
+}
+
+@media (max-width: 540px) {
+  /* Competitor comparison: stack vertically */
+  .competitor-grid { grid-template-columns: 1fr !important; }
+
+  /* AI search visibility summary: stack */
+  .ai-search-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* Results page agent score cards: 2-col */
+  .results-agent-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+@media (max-width: 480px) {
+  /* Hide nav links on very small screens */
+  .nav-links { display: none !important; }
+
+  /* Hero section: reduce top/bottom padding */
+  .hero-section-inner {
+    padding-top: 48px !important;
+    padding-bottom: 36px !important;
+  }
+
+  /* Score display: scale down */
+  .score-number-big { font-size: 56px !important; }
+  .score-grade-big { font-size: 32px !important; }
+
+  /* Section cards with 32px padding: reduce on mobile */
+  .section-card-sm { padding: 20px 18px 24px !important; }
+
+  /* Nav results variant: tighten CTA */
+  .nav-cta { padding: 0 10px !important; font-size: 12px !important; }
+  .share-btn { padding: 0 10px !important; font-size: 12px !important; }
+
+  /* URL input: stack input + button vertically */
+  .url-input-row { flex-direction: column !important; }
+  .url-input-row input { width: 100% !important; }
+  .url-input-row button { width: 100% !important; }
+}
+
+@media (max-width: 400px) {
+  /* Extra small: 4-col grid → 1-col */
+  .how-agent-grid { grid-template-columns: 1fr !important; }
+
+  /* Further scale down score */
+  .score-number-big { font-size: 44px !important; }
+  .score-grade-big { font-size: 26px !important; }
+}

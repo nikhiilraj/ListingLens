@@ -65,7 +65,7 @@ export default function BuiltWithPage() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Nav />
 
-      <main style={{ maxWidth: 760, margin: '0 auto', padding: '80px 24px 120px', flex: 1 }}>
+      <main className="page-main" style={{ maxWidth: 760, margin: '0 auto', padding: '80px 24px 120px', flex: 1 }}>
 
         <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 16, animation: 'fadeSlideUp 400ms ease forwards' }}>
           Stack transparency

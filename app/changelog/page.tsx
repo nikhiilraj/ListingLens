@@ -79,7 +79,7 @@ export default function ChangelogPage() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Nav />
 
-      <main style={{ maxWidth: 680, margin: '0 auto', padding: '80px 24px 120px', flex: 1 }}>
+      <main className="page-main" style={{ maxWidth: 680, margin: '0 auto', padding: '80px 24px 120px', flex: 1 }}>
 
         <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 16, animation: 'fadeSlideUp 400ms ease forwards' }}>
           Release history
@@ -111,6 +111,7 @@ export default function ChangelogPage() {
           {ENTRIES.map((entry, idx) => (
             <div
               key={idx}
+              className="timeline-row"
               style={{
                 display: 'grid',
                 gridTemplateColumns: '160px 1fr',
@@ -119,9 +120,9 @@ export default function ChangelogPage() {
               }}
             >
               {/* Left: date + dot */}
-              <div style={{ padding: '32px 32px 32px 0', position: 'relative' }}>
+              <div className="timeline-left-col" style={{ padding: '32px 32px 32px 0', position: 'relative' }}>
                 {idx < ENTRIES.length - 1 && (
-                  <div style={{ position: 'absolute', right: -1, top: 44, bottom: 0, width: 1, background: 'var(--border)' }} />
+                  <div className="timeline-line-el" style={{ position: 'absolute', right: -1, top: 44, bottom: 0, width: 1, background: 'var(--border)' }} />
                 )}
                 <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 4 }}>
                   {entry.date}
@@ -129,7 +130,7 @@ export default function ChangelogPage() {
                 <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>
                   {entry.dayLabel}
                 </div>
-                <div style={{
+                <div className="timeline-dot-el" style={{
                   position: 'absolute',
                   right: -5, top: 40,
                   width: 9, height: 9,
@@ -142,7 +143,7 @@ export default function ChangelogPage() {
               </div>
 
               {/* Right: content */}
-              <div style={{ padding: '32px 0 32px 32px', borderLeft: idx < ENTRIES.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              <div className="timeline-right-col" style={{ padding: '32px 0 32px 32px', borderLeft: idx < ENTRIES.length - 1 ? '1px solid var(--border)' : 'none' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
                   <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, color: 'var(--text-tertiary)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 5, padding: '2px 7px', flexShrink: 0, marginTop: 2 }}>
                     {entry.version}

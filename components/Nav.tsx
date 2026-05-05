@@ -45,7 +45,7 @@ export default function Nav({ variant = 'default' }: NavProps) {
       </Link>
 
       {variant === 'default' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+        <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {NAV_LINKS.map(link => (
             <Link
               key={link.href}

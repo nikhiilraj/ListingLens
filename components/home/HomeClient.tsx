@@ -520,7 +520,7 @@ function ImageCard({ img }: { img: ImageItem }) {
 
 // ── Main component ────────────────────────────────────────────────
 export default function HomeClient() {
-  const [url, setUrl] = useState('https://www.amazon.com/dp/B0FJN3BTPV');
+  const [url, setUrl] = useState('https://www.amazon.com/dp/B0FRNR8Y11');
   const [urlError, setUrlError] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [agentStates, setAgentStates] = useState<AgentState[]>(['waiting', 'waiting', 'waiting', 'waiting']);
@@ -768,7 +768,7 @@ export default function HomeClient() {
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
 
           {/* ── Hero ── */}
-          <section style={{ textAlign: 'center', padding: '80px 0 64px', position: 'relative' }}>
+          <section className="hero-section-inner" style={{ textAlign: 'center', padding: '80px 0 64px', position: 'relative' }}>
             <div style={{
               position: 'absolute',
               top: 0,
@@ -835,7 +835,7 @@ export default function HomeClient() {
 
             {/* URL Input */}
             <div style={{ ...heroStyle(180), maxWidth: 600, margin: '0 auto' }}>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div className="url-input-row" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <input
                   type="text"
                   className="url-input"
@@ -845,7 +845,7 @@ export default function HomeClient() {
                   placeholder="https://www.amazon.com/dp/..."
                   style={{
                     flex: 1,
-                    minWidth: 240,
+                    minWidth: 0,
                     height: 56,
                     background: 'var(--white)',
                     border: `1.5px solid ${urlError ? 'var(--score-low)' : 'var(--border)'}`,
@@ -967,7 +967,7 @@ export default function HomeClient() {
               <section style={{ textAlign: 'center', padding: '40px 0 36px' }}>
                 {/* Score + grade row */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 12 }}>
-                  <span style={{
+                  <span className="score-number-big" style={{
                     fontFamily: 'var(--font-dm-sans)',
                     fontSize: 80,
                     fontWeight: 700,
@@ -988,7 +988,7 @@ export default function HomeClient() {
                     margin: '0 10px',
                     userSelect: 'none',
                   }}>/</span>
-                  <span style={{
+                  <span className="score-grade-big" style={{
                     fontFamily: 'var(--font-dm-sans)',
                     fontSize: 48,
                     fontWeight: 700,
@@ -1058,7 +1058,7 @@ export default function HomeClient() {
               </section>
 
               {/* 3. Biggest conversion leak */}
-              <section style={{ background: 'var(--surface)', border: '1px solid rgba(220,38,38,0.12)', borderRadius: 16, padding: '32px 32px 36px', marginTop: 64, marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 280ms forwards' }}>
+              <section className="section-card-sm" style={{ background: 'var(--surface)', border: '1px solid rgba(220,38,38,0.12)', borderRadius: 16, padding: '32px 32px 36px', marginTop: 64, marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 280ms forwards' }}>
                 <SectionLabel>Conversion analysis</SectionLabel>
                 <div style={{ marginBottom: 24 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
@@ -1151,7 +1151,7 @@ export default function HomeClient() {
               </section>
 
               {/* 4. Competitor comparison */}
-              <section style={{ background: 'var(--surface)', borderRadius: 16, padding: '32px 32px 36px', marginTop: 64, marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 360ms forwards' }}>
+              <section className="section-card-sm" style={{ background: 'var(--surface)', borderRadius: 16, padding: '32px 32px 36px', marginTop: 64, marginBottom: 72, opacity: 0, animation: 'fadeSlideUp 500ms cubic-bezier(0.16,1,0.3,1) 360ms forwards' }}>
                 <SectionLabel>Competitor comparison</SectionLabel>
                 <div style={{ marginBottom: 24 }}>
                   <h2 style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 22, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: '0 0 8px' }}>
@@ -1162,7 +1162,7 @@ export default function HomeClient() {
                   </p>
                 </div>
                 <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+                  <div className="competitor-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
                     {(['Your image', 'Top competitor'] as const).map((label, i) => {
                       const imgUrl = i === 0 
                         ? resultPayload?.product?.images?.[0]
@@ -1241,7 +1241,7 @@ export default function HomeClient() {
                   return (
                     <>
                       {/* Summary header */}
-                      <div style={{
+                      <div className="ai-search-header" style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',

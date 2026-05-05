@@ -42,7 +42,7 @@ export default function HowItWorksPage() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Nav />
 
-      <main style={{ maxWidth: 820, margin: '0 auto', padding: '80px 24px 120px', flex: 1 }}>
+      <main className="page-main" style={{ maxWidth: 820, margin: '0 auto', padding: '80px 24px 120px', flex: 1 }}>
 
         <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 16, animation: 'fadeSlideUp 400ms ease forwards' }}>
           Technical overview
@@ -97,7 +97,7 @@ export default function HowItWorksPage() {
             <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0', color: 'var(--text-tertiary)', fontSize: 16 }}>↓</div>
 
             {/* Agent cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
+            <div className="how-agent-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
               {[
                 { name: 'Visual auditor', api: 'Claude Sonnet', detail: 'vision + rubric' },
                 { name: 'Review intelligence', api: 'Firecrawl', detail: 'NLP + gap mapping' },
@@ -290,7 +290,8 @@ export default function HowItWorksPage() {
           <SectionLabel>Decisions</SectionLabel>
           <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.025em', color: 'var(--text-primary)', marginBottom: 20 }}>Key architectural choices</h2>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 24 }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <table style={{ width: '100%', minWidth: 560, borderCollapse: 'collapse', marginBottom: 24 }}>
             <thead>
               <tr>
                 {['Decision', 'Chose', 'Rejected', 'Reason'].map(h => (
@@ -318,6 +319,7 @@ export default function HowItWorksPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
 
       </main>
