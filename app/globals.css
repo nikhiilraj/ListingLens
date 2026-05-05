@@ -73,6 +73,11 @@ body {
   from { width: 0; }
 }
 
+@keyframes imageSkelPulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
 /* ── Shared navigation ───────────────────────────────────────────── */
 .nav-link {
   font-size: 13px;

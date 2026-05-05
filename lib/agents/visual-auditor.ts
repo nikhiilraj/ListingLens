@@ -7,7 +7,6 @@ import { isDevMode } from '../dev-mode';
 import { getFixtureVisualAudit } from '../fixtures';
 import type { ProductData } from '../schemas/product';
 
-// Minimal interface agents need from the stream — implemented by the API route in Phase 10.
 export interface AgentStreamWriter {
   writeData(value: Record<string, unknown>): void;
 }
@@ -32,10 +31,16 @@ export async function runVisualAuditor(
       return fixture;
     }
 
-    // Use 300px images (down from 500px) — reduces base64 payload by ~64%,
-    // keeping Claude Vision fast enough to complete within the 55s window.
-    const imageUrls = product.images.slice(0, 6).map(u => u.replace(/_AC_SL\d+_/, '_AC_SL300_'));
-    const imageResults = await Promise.allSettled(imageUrls.map(url => fetchImageAsBase64(url)));
+    // Full quality: 6 images at 500px. No timeout pressure — this agent runs in the
+    // background after type:'complete' is already sent to the client. Claude Vision
+    // typically takes 60–90s for 6 images; the client shows a skeleton until it resolves.
+    const imageUrls = product.images
+      .slice(0, 6)
+      .map(u => u.replace(/_AC_SL\d+_/, '_AC_SL500_'));
+
+    const imageResults = await Promise.allSettled(
+      imageUrls.map(url => fetchImageAsBase64(url))
+    );
 
     const validImages: { index: number; base64: string; mimeType: string }[] = [];
     imageResults.forEach((result, index) => {
@@ -68,14 +73,8 @@ export async function runVisualAuditor(
               text: `Audit these ${validImages.length} listing images in carousel order. Image 0 is the hero. Apply all 12 CRO levers. Every failure must meet the specificity standard in the rubric.`,
             },
             ...validImages.flatMap(({ base64, mimeType }, idx) => [
-              {
-                type: 'text' as const,
-                text: `Image ${idx}:`,
-              },
-              {
-                type: 'image' as const,
-                image: `data:${mimeType};base64,${base64}`,
-              }
+              { type: 'text' as const, text: `Image ${idx}:` },
+              { type: 'image' as const, image: `data:${mimeType};base64,${base64}` },
             ]),
           ],
         },
@@ -95,7 +94,8 @@ export async function runVisualAuditor(
 
     return object;
   } catch (e) {
-    console.error(e); stream.writeData({ agent: 'visual', status: 'failed', message: 'Visual audit could not complete.' });
+    console.error('[visual-auditor]', e);
+    stream.writeData({ agent: 'visual', status: 'failed', message: 'Visual audit could not complete.' });
     return null;
   }
 }

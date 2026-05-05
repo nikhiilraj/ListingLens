@@ -704,6 +704,14 @@ export default function HomeClient() {
               setSynthState('done');
               setTimeout(() => { setReportVisible(true); setTimeout(() => setScoreAnimate(true), 300); }, 600);
             }
+            // Don't break — keep reading the stream for visual_complete.
+            continue;
+          }
+
+          if (ev.type === 'visual_complete') {
+            if (ev.payload) {
+              setResultPayload(ev.payload as CachedResult);
+            }
             break outer;
           }
 
@@ -1023,15 +1031,25 @@ export default function HomeClient() {
                       }} />
                     ))
                   ) : resultPayload?.product?.images?.length ? (
-                    resultPayload.product.images.slice(0, 7).map((url, i) => (
-                      <div key={i} style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: i < Math.min(resultPayload.product.images.length, 7) - 1 ? '1px solid var(--border)' : 'none' }}>
+                    resultPayload.product.images.slice(0, 6).map((url, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: i < Math.min(resultPayload.product.images.length, 6) - 1 ? '1px solid var(--border)' : 'none' }}>
                         <div style={{ width: 80, height: 80, borderRadius: 8, flexShrink: 0, overflow: 'hidden', border: '1px solid var(--border)' }}>
                           <img src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={`Image ${i + 1}`} />
                         </div>
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, color: 'var(--text-tertiary)' }}>
-                            Image {i + 1} — analysis unavailable
-                          </span>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+                          <div style={{
+                            height: 12, borderRadius: 6, background: 'var(--border)',
+                            width: `${55 + (i * 17) % 30}%`,
+                            animation: 'imageSkelPulse 1.6s ease-in-out infinite',
+                            animationDelay: `${i * 120}ms`,
+                          }} />
+                          <div style={{
+                            height: 10, borderRadius: 5, background: 'var(--border)',
+                            width: `${35 + (i * 13) % 25}%`,
+                            opacity: 0.6,
+                            animation: 'imageSkelPulse 1.6s ease-in-out infinite',
+                            animationDelay: `${i * 120 + 80}ms`,
+                          }} />
                         </div>
                       </div>
                     ))
