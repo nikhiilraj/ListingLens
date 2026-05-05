@@ -829,7 +829,7 @@ export default function HomeClient() {
               maxWidth: 520,
               margin: '0 auto 40px',
             }}>
-              Paste your Amazon listing URL. Four AI agents analyse your images,
+              Paste your Amazon listing URL. Use ASIN. Four AI agents analyse your images,
               benchmark your competitors, and check your AI search visibility — in 90 seconds.
             </p>
 
