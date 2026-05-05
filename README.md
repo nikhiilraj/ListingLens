@@ -2,7 +2,7 @@
 
 **Amazon listing image auditor powered by 4 parallel AI agents.**
 
-![ListingLens](./banner.svg)
+![ListingLens](./public/banner.svg)
 
 Paste an Amazon listing URL. In 90 seconds, four AI agents analyse your images, benchmark your competitors, check your AI search visibility, and generate a structured design brief — ready to hand to a designer or paste directly into Pixii.
 
